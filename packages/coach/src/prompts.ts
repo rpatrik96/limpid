@@ -87,6 +87,10 @@ const SCHEMA_HINT = `Return JSON of EXACTLY this shape:
 }
 Every array may be empty. "before"/"after"/"spans"/"signals" are optional. "precisionScore" and "altitude" are REQUIRED.`;
 
+/** One worked example to steer adherence on weaker models (shape, not content). */
+const EXAMPLE = `EXAMPLE (illustrative — copy the SHAPE, not the content; use pattern ids from the list above):
+{"stressTopic":[{"message":"The sentence trails off into 'in this paper'; the contribution should land last.","why":"The stress position (sentence end) carries the new, important idea.","spans":[{"start":0,"end":24}],"severity":"warning"}],"cohesion":[],"altitude":{"assumedAudience":"ML reviewer","inferred":true,"verdict":"appropriately pitched for a reviewer","signals":["uses 'loss' without defining it"]},"argumentFlow":[{"message":"Buried lede: the key idea appears in sentence 3.","why":"Readers decide whether to continue from the first sentence.","severity":"warning"}],"patterns":[{"id":"buried-lede","evidence":"main idea is in the third sentence"}],"precisionScore":6}`;
+
 /**
  * Build the {@link LMRequest} for the single-call lens pass.
  * `json: true` asks adapters that support it for raw JSON; the coach validates
@@ -125,7 +129,9 @@ Also diagnose any NAMED PATTERNS that apply, by id, with evidence.
 
 Score "precisionScore" 1..10: 10 = every paragraph leads with its claim, claims are backed by specific evidence, terminology is consistent, transitions are logical; 1 = buried ledes throughout, unsupported claims, orphan transitions.${softenClause}
 
-${SCHEMA_HINT}`;
+${SCHEMA_HINT}
+
+${EXAMPLE}`;
 
   return {
     system: SYSTEM,

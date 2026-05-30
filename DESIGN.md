@@ -111,3 +111,27 @@ Malformed LLM JSON → validate + one retry, then drop the LLM findings and degr
   research-agora). Reuses research-agora editorial content by porting.
 - **Engine ⊂ rubric word-lists:** v0 duplicates a few word lists between `engine` and `rubric` to keep
   them independently buildable; unify (engine consumes rubric lists) in v1.
+
+## Providers (v1.1)
+
+`limpid.provider` (default `auto`) selects the model behind the LLM lenses: **Copilot** (VS Code LM
+API — the **free tier** works; consent + shared quota; cheap-model-first), **Claude Code CLI**
+(`claude -p`, keyless subscription auth), **Ollama** (keyless), **Anthropic**, and one
+OpenAI-compatible adapter for **OpenAI / OpenRouter / Groq / Together / Mistral**. `auto` prefers free
+Copilot, then any API key. Keys live in the **OS keychain** (SecretStorage) via *Limpid: Set/Clear API
+Key*, never settings. On any model error the host degrades to a deterministic report. The pure adapters
+(`openaiCompatible`, `claude`, `cliModel`) have no `vscode` import and are unit-tested.
+
+## v2 — chosen direction (decided 2026-05-30)
+
+- **Now — (A) LLM-lens hardening.** The four lenses were only mock-tested. This increment adds a
+  few-shot example to the lens prompt and a **golden-set eval harness** (`packages/coach/src/eval/`,
+  `npm run eval`) that scores any provider against labelled cases; run a real provider via
+  `LIMPID_EVAL_BASE_URL` / `LIMPID_EVAL_API_KEY` / `LIMPID_EVAL_MODEL`. Still open in A: prompt
+  calibration from eval results, per-provider JSON-mode capability flags, a larger golden set, and a
+  pure `@coach/providers` package (extract the adapters out of `apps/extension`) so the eval and a
+  future web app run real providers cleanly. (Copilot is only evaluable inside the extension host.)
+- **Queued for v2 — (E)** editable rules + rule playground, **(F)** CI / pre-commit `limpid` CLI gate,
+  **(G)** multi-register coaching (blogs / grants / SOPs).
+- **Deferred — (B)** public web app, **(C)** inline `.tex` squiggles, **(D)** learning center + trends,
+  **(H)** section-aware deepening.
