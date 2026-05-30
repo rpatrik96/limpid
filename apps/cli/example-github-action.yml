@@ -1,0 +1,35 @@
+# Example — copy this to `.github/workflows/writing-check.yml` in your PAPER repo
+# to gate PRs on Limpid's deterministic writing checks (no LLM, no secrets).
+#
+# Limpid is not on npm yet, so this checks the tool out and builds the CLI. While
+# the limpid repo is private, add a PAT with read access as the `LIMPID_TOKEN`
+# secret and uncomment the `token:` line.
+name: writing-check
+on:
+  pull_request:
+    paths: ["**/*.tex"]
+  workflow_dispatch:
+
+jobs:
+  limpid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # your paper repo
+      - uses: actions/checkout@v4 # the limpid tool
+        with:
+          repository: rpatrik96/limpid
+          path: .limpid-tool
+          # token: ${{ secrets.LIMPID_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the limpid CLI
+        working-directory: .limpid-tool
+        run: |
+          npm ci
+          npm run build -w apps/cli
+      - name: Check writing
+        run: |
+          node .limpid-tool/apps/cli/dist/cli.js \
+            --max-passive 0.4 --max-fk 20 --min-grade C \
+            $(git ls-files '*.tex')

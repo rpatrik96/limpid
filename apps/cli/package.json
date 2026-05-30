@@ -1,0 +1,27 @@
+{
+  "name": "@coach/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "limpid CLI — deterministic writing checks for CI / pre-commit gates on .tex (and prose).",
+  "bin": {
+    "limpid": "./dist/cli.js"
+  },
+  "main": "./dist/cli.js",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coach/coach": "*",
+    "@coach/contract": "*",
+    "@coach/engine": "*",
+    "@coach/latex": "*",
+    "@coach/rubric": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "esbuild": "^0.21.3",
+    "typescript": "^5.6.3"
+  }
+}
