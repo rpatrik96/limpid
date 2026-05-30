@@ -1,0 +1,62 @@
+{
+  "name": "limpid",
+  "displayName": "Limpid",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
+  "publisher": "rpatrik96",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Education", "Linters", "Other"],
+  "keywords": ["writing", "latex", "academic", "prose", "clarity", "coach"],
+  "activationEvents": [],
+  "main": "./dist/extension.cjs",
+  "contributes": {
+    "commands": [
+      {
+        "command": "limpid.coach",
+        "title": "Coach this selection / section",
+        "category": "Limpid"
+      }
+    ],
+    "configuration": {
+      "title": "Limpid",
+      "properties": {
+        "limpid.audience": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Default target reader to judge audience-altitude against (e.g. `NeurIPS reviewer`, `ML newcomer`). Leave empty to let Limpid infer it; you can also change it per run in the panel."
+        },
+        "limpid.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Anthropic API key used **only** when Copilot's Language Model API is unavailable. Leave empty to use Copilot, or to run deterministic-only (no LLM)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "vscode:prepublish": "node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rpatrik96/limpid"
+  },
+  "dependencies": {
+    "@coach/coach": "*",
+    "@coach/contract": "*",
+    "@coach/engine": "*",
+    "@coach/latex": "*",
+    "@coach/rubric": "*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@types/node": "^22.9.0",
+    "esbuild": "^0.21.3",
+    "typescript": "^5.6.3"
+  }
+}

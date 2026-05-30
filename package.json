@@ -1,0 +1,23 @@
+{
+  "name": "limpid",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "echo \"(no lint configured yet)\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
