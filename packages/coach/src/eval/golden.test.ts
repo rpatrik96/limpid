@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { CoachReport, Finding, LanguageModel, LMRequest, LMResponse } from "@coach/contract";
+import type { CoachReport, Finding } from "@coach/contract";
+import { fromEnv } from "@coach/providers";
 
 import { MockLanguageModel } from "../index.js";
 import { GOLDEN_CASES } from "./cases.js";
@@ -102,7 +103,9 @@ describe.skipIf(!BASE)("runEval (real provider via env)", () => {
   it(
     "reports a pass rate against the configured endpoint",
     async () => {
-      const model = envModel();
+      const model = fromEnv(process.env);
+      expect(model).not.toBeNull();
+      if (!model) return;
       const out = await runEval(model, GOLDEN_CASES);
       // eslint-disable-next-line no-console
       console.log("\n" + formatEvalReport(out) + "\n");
@@ -111,35 +114,3 @@ describe.skipIf(!BASE)("runEval (real provider via env)", () => {
     120_000,
   );
 });
-
-/** A minimal OpenAI-compatible model built from env — for the opt-in real eval. */
-function envModel(): LanguageModel {
-  const baseURL = process.env["LIMPID_EVAL_BASE_URL"] ?? "http://localhost:11434/v1";
-  const apiKey = process.env["LIMPID_EVAL_API_KEY"];
-  const model = process.env["LIMPID_EVAL_MODEL"] ?? "gpt-4o-mini";
-  return {
-    id: `eval:${model}`,
-    async complete(req: LMRequest): Promise<LMResponse> {
-      const headers: Record<string, string> = { "content-type": "application/json" };
-      if (apiKey) headers["authorization"] = `Bearer ${apiKey}`;
-      const messages = [
-        ...(req.system ? [{ role: "system", content: req.system }] : []),
-        { role: "user", content: req.prompt },
-      ];
-      const res = await fetch(`${baseURL.replace(/\/$/, "")}/chat/completions`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: req.temperature ?? 0.2,
-          max_tokens: req.maxTokens ?? 2048,
-          ...(req.json ? { response_format: { type: "json_object" } } : {}),
-        }),
-      });
-      if (!res.ok) throw new Error(`eval model ${res.status}: ${await res.text()}`);
-      const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-      return { text: j.choices?.[0]?.message?.content ?? "" };
-    },
-  };
-}

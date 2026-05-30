@@ -1,5 +1,5 @@
 {
-  "name": "@coach/coach",
+  "name": "@coach/providers",
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -7,17 +7,14 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "description": "Host-side LanguageModel adapters (OpenAI-compatible, Anthropic, Claude Code CLI) shared by the extension and the eval. Uses fetch/child_process; not one of the pure core packages.",
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@coach/contract": "*",
-    "@coach/engine": "*",
-    "@coach/rubric": "*"
+    "@coach/contract": "*"
   },
   "devDependencies": {
-    "@coach/latex": "*",
-    "@coach/providers": "*",
     "@types/node": "^22.9.0",
     "typescript": "^5.6.3"
   }

@@ -12,6 +12,7 @@ export default defineConfig({
       "@coach/engine": r("packages/engine/src/index.ts"),
       "@coach/latex": r("packages/latex/src/index.ts"),
       "@coach/rubric": r("packages/rubric/src/index.ts"),
+      "@coach/providers": r("packages/providers/src/index.ts"),
       "@coach/coach": r("packages/coach/src/index.ts"),
     },
   },

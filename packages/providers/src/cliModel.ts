@@ -4,8 +4,7 @@
  * Keyless: it uses the user's existing Claude subscription login (OAuth in the OS
  * keychain), so no API key is needed. We run headless JSON mode and read the
  * `result` field; the prompt is piped via stdin to avoid arg-length/escaping
- * issues. No `vscode` import (pure Node) — the `runner` seam makes it testable
- * without spawning a real process.
+ * issues. The `runner` seam makes it testable without spawning a real process.
  *
  * Note: plain `-p` (no `--bare`) is required for the subscription-auth path.
  */

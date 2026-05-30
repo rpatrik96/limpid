@@ -82,8 +82,9 @@ A front-end-agnostic core (so a web app can reuse it) plus one VS Code front-end
 | `@coach/engine` | deterministic metrics + findings (pure) |
 | `@coach/latex` | `.tex` → extracted prose + coarse source map (pure) |
 | `@coach/rubric` | the canon as data: rules, 12 named patterns, thresholds, voice guards |
-| `@coach/coach` | LLM judgment (4 lenses + diagnosis) → `CoachReport` |
-| `apps/extension` | command + webview coach panel; Copilot / Claude / OpenAI-compatible / Ollama / Claude-Code-CLI providers; SecretStorage keys |
+| `@coach/coach` | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness |
+| `@coach/providers` | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + eval |
+| `apps/extension` | command + webview coach panel; Copilot adapter + the `@coach/providers` adapters; SecretStorage keys |
 
 See [DESIGN.md](DESIGN.md) for the full spec and [AGENTS.md](AGENTS.md) for repo
 conventions.

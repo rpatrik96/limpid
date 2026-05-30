@@ -68,4 +68,28 @@ export const GOLDEN_CASES: EvalCase[] = [
       "The gain comes from the rare classes, which the standard loss underweights.",
     expect: { gradeIn: ["A+", "A", "A-", "B+", "B"] },
   },
+  {
+    id: "throat-clearing",
+    description: "Opens with empty throat-clearing before the point.",
+    text:
+      "It is well known that, in the literature, a great deal of attention has been devoted to the question of whether " +
+      "regularization helps. It should be noted that we find it does, substantially, on small datasets.",
+    expect: { minLlmFindings: 1 },
+  },
+  {
+    id: "orphan-transition",
+    description: "Second paragraph switches topic with no bridge.",
+    text:
+      "We train the encoder with a contrastive loss and reach 92% accuracy.\n\n" +
+      "Quantization reduces the model to 4 bits. The hardware budget is therefore halved.",
+    expect: { minLlmFindings: 1 },
+  },
+  {
+    id: "monotonous-rhythm",
+    description: "Every sentence is the same length and cadence.",
+    text:
+      "The model learns a representation. The loss decreases over time. The accuracy improves on the set. " +
+      "The method beats the baseline. The result holds across seeds.",
+    expect: { minLlmFindings: 1 },
+  },
 ];

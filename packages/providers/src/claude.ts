@@ -1,10 +1,9 @@
 /**
  * A {@link LanguageModel} backed by the Anthropic Messages API.
  *
- * Fallback for when VS Code's LM API (Copilot) is unavailable but the user has
- * configured `limpid.anthropicApiKey`. Network I/O lives here, in the host layer,
- * so the @coach core stays pure and provider-agnostic. Uses the global `fetch`
- * (Node 18+ / the extension host).
+ * Used when the user configures an Anthropic key. Network I/O lives here (the host
+ * layer) so the @coach core stays pure. Uses the global `fetch` (Node 18+ / the
+ * extension host).
  */
 import type { LanguageModel, LMRequest, LMResponse } from "@coach/contract";
 

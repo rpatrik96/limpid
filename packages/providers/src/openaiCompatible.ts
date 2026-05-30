@@ -3,8 +3,8 @@
  *
  * One adapter covers every provider that speaks `POST {baseURL}/chat/completions`
  * — OpenAI, OpenRouter, Groq, Together, Mistral, and local Ollama — parameterized
- * by `{ baseURL, apiKey?, model, extraHeaders? }`. No `vscode` import, so it is
- * pure Node and unit-testable; the `fetchFn` seam lets tests inject responses.
+ * by `{ baseURL, apiKey?, model, extraHeaders? }`. The `fetchFn` seam lets tests
+ * inject responses.
  *
  * Native Anthropic is intentionally NOT folded in here (it uses `x-api-key` +
  * `anthropic-version` and a different response shape) — see `claude.ts`.

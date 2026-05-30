@@ -4,15 +4,22 @@
  * any configured OpenAI-compatible key. Claude Code (CLI) and Ollama are opt-in
  * (they need a local install), so "auto" never spawns them. Returns `null` for
  * the deterministic-only path. The @coach core only ever sees a `LanguageModel`.
+ *
+ * The adapters live in `@coach/providers` (pure, shared with the eval); only the
+ * Copilot adapter (`vscodeModel`) stays here because it needs `vscode`.
  */
 import * as vscode from "vscode";
 
 import type { LanguageModel } from "@coach/contract";
+import {
+  OPENAI_PRESETS,
+  buildPresetModel,
+  OpenAICompatibleModel,
+  ClaudeLanguageModel,
+  ClaudeCliModel,
+} from "@coach/providers";
 
 import { tryVsCodeModel } from "./vscodeModel.js";
-import { ClaudeLanguageModel } from "./claude.js";
-import { OpenAICompatibleModel } from "./openaiCompatible.js";
-import { ClaudeCliModel } from "./cliModel.js";
 import { getApiKey } from "./secrets.js";
 
 export type ProviderId =
@@ -27,28 +34,6 @@ export type ProviderId =
   | "mistral"
   | "ollama"
   | "openai-compatible";
-
-interface PresetSpec {
-  baseURL: string;
-  secret: string;
-  defaultModel: string;
-  label: string;
-  extraHeaders?: Record<string, string>;
-}
-
-const OPENAI_PRESETS: Record<string, PresetSpec> = {
-  openai: { baseURL: "https://api.openai.com/v1", secret: "openai", defaultModel: "gpt-4o-mini", label: "openai" },
-  openrouter: {
-    baseURL: "https://openrouter.ai/api/v1",
-    secret: "openrouter",
-    defaultModel: "openai/gpt-4o-mini",
-    label: "openrouter",
-    extraHeaders: { "HTTP-Referer": "https://github.com/rpatrik96/limpid", "X-Title": "Limpid" },
-  },
-  groq: { baseURL: "https://api.groq.com/openai/v1", secret: "groq", defaultModel: "llama-3.3-70b-versatile", label: "groq" },
-  together: { baseURL: "https://api.together.xyz/v1", secret: "together", defaultModel: "meta-llama/Llama-3.3-70B-Instruct-Turbo", label: "together" },
-  mistral: { baseURL: "https://api.mistral.ai/v1", secret: "mistral", defaultModel: "mistral-large-latest", label: "mistral" },
-};
 
 function cfg<T>(key: string): T | undefined {
   return vscode.workspace.getConfiguration("limpid").get<T>(key);
@@ -67,13 +52,7 @@ async function buildOpenAIPreset(
   if (!preset) return null;
   const apiKey = await getApiKey(context, preset.secret);
   if (!apiKey) return null;
-  return new OpenAICompatibleModel({
-    baseURL: preset.baseURL,
-    apiKey,
-    model: modelOverride() ?? preset.defaultModel,
-    label: preset.label,
-    ...(preset.extraHeaders ? { extraHeaders: preset.extraHeaders } : {}),
-  });
+  return buildPresetModel(preset, { apiKey, model: modelOverride() });
 }
 
 function buildOllama(): LanguageModel {
