@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -28,6 +28,16 @@
       {
         "command": "limpid.clearApiKey",
         "title": "Clear API Key…",
+        "category": "Limpid"
+      },
+      {
+        "command": "limpid.editRules",
+        "title": "Edit Rules (.limpid/rules.json)",
+        "category": "Limpid"
+      },
+      {
+        "command": "limpid.testRule",
+        "title": "Test Rule against selection",
         "category": "Limpid"
       }
     ],

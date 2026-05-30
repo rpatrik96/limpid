@@ -29,3 +29,8 @@ export const defaultRubric: RubricConfig = {
 };
 
 export { dimensions, thresholds, rules, patterns, voiceGuards, gradeBands };
+
+export { runDetector } from "./detector.js";
+export type { DetectorMatch } from "./detector.js";
+export { parseUserRules, mergeRubric } from "./userRules.js";
+export type { ParseResult } from "./userRules.js";

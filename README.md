@@ -72,6 +72,13 @@ code --install-extension limpid-*.vsix
 Open a `.tex` file, select a paragraph (or none, for the whole file), and run
 **“Limpid: Coach this selection / section”** from the Command Palette.
 
+## Editable rules (playground)
+
+Add or override rules without touching code: run **“Limpid: Edit Rules”** to
+scaffold and open `.limpid/rules.json` in your workspace. Each coach run merges
+your rules/patterns into the defaults (same `id` overrides, new `id` adds). Run a
+detector-backed rule against the current selection with **“Limpid: Test Rule”**.
+
 ## Architecture
 
 A front-end-agnostic core (so a web app can reuse it) plus one VS Code front-end:

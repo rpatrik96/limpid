@@ -18,12 +18,12 @@ import * as vscode from "vscode";
 import type { CoachInput, CoachReport, Extraction, LanguageModel } from "@coach/contract";
 import { extract } from "@coach/latex";
 import { analyze } from "@coach/engine";
-import { defaultRubric } from "@coach/rubric";
 import { createCoach } from "@coach/coach";
 
 import { renderReport, DEFAULT_AUDIENCES } from "./render.js";
 import { pickLanguageModel } from "./providers.js";
 import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
+import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
 
 const COMMAND_ID = "limpid.coach";
 const PANEL_VIEW_TYPE = "limpid.panel";
@@ -52,6 +52,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(COMMAND_ID, () => runCommand(context)),
     vscode.commands.registerCommand("limpid.setApiKey", () => setApiKeyCommand(context)),
     vscode.commands.registerCommand("limpid.clearApiKey", () => clearApiKeyCommand(context)),
+    vscode.commands.registerCommand("limpid.editRules", () => editRulesCommand()),
+    vscode.commands.registerCommand("limpid.testRule", () => testRuleCommand()),
   );
 }
 
@@ -111,11 +113,15 @@ async function runReview(
     async () => {
       const extraction: Extraction = extract(tex);
       const engine = analyze(extraction.text);
+      const { rubric, errors } = await loadRubric();
+      if (errors.length) {
+        void vscode.window.showWarningMessage(`Limpid rules: ${errors.length} issue(s) — ${errors[0]}`);
+      }
 
       const base: CoachInput = {
         extraction,
         engine,
-        rubric: defaultRubric,
+        rubric,
         ...(audience ? { audience } : {}),
         ...(previous ? { previous } : {}),
       };
