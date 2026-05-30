@@ -23,13 +23,29 @@ Palette. A panel opens with:
 ## The LLM lenses
 
 The mechanical checks are deterministic. The four judgment calls — stress
-position, paragraph cohesion, audience altitude, argument flow — use a model when
-available: **Copilot** (VS Code LM API), else **Claude** (set
-`limpid.anthropicApiKey`), else a **deterministic-only** report.
+position, paragraph cohesion, audience altitude, argument flow — use a language
+model chosen by `limpid.provider` (default `auto`):
+
+- **Copilot** — the VS Code LM API; **the free tier works** (sign in + one-time
+  consent), no key.
+- **Claude Code CLI** (`claude-code`) — runs `claude -p` against your Claude
+  subscription, no key.
+- **Ollama** — a local model, no key.
+- **API providers** — Anthropic, OpenAI, OpenRouter, Groq, Together, Mistral, or
+  any OpenAI-compatible endpoint.
+
+With none available it returns a **deterministic-only** report and tells you.
+
+**API keys live in the OS keychain, never settings.** Run **“Limpid: Set API
+Key”** to store one and **“Limpid: Clear API Key”** to remove it.
 
 ## Settings
 
+- `limpid.provider` — which provider (default `auto`).
+- `limpid.model` — override the model id (empty = provider default).
 - `limpid.audience` — default target reader (empty = infer).
-- `limpid.anthropicApiKey` — used only when Copilot is unavailable.
+- `limpid.ollama.baseURL`, `limpid.claudeCode.command`,
+  `limpid.openaiCompatible.baseURL` / `.model` — endpoint config for the local /
+  custom providers.
 
 Source and design notes: <https://github.com/rpatrik96/limpid>.

@@ -1,13 +1,13 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
   "publisher": "rpatrik96",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.91.0"
   },
   "categories": ["Education", "Linters", "Other"],
   "keywords": ["writing", "latex", "academic", "prose", "clarity", "coach"],
@@ -19,20 +19,69 @@
         "command": "limpid.coach",
         "title": "Coach this selection / section",
         "category": "Limpid"
+      },
+      {
+        "command": "limpid.setApiKey",
+        "title": "Set API Key…",
+        "category": "Limpid"
+      },
+      {
+        "command": "limpid.clearApiKey",
+        "title": "Clear API Key…",
+        "category": "Limpid"
       }
     ],
     "configuration": {
       "title": "Limpid",
       "properties": {
+        "limpid.provider": {
+          "type": "string",
+          "enum": ["auto", "copilot", "claude-code", "anthropic", "openai", "openrouter", "groq", "together", "mistral", "ollama", "openai-compatible"],
+          "enumDescriptions": [
+            "Prefer free Copilot, then any configured API key (recommended)",
+            "GitHub Copilot via the VS Code Language Model API (free tier works)",
+            "Local Claude Code CLI (`claude -p`) — uses your Claude subscription, no API key",
+            "Anthropic API (set the anthropic key via 'Limpid: Set API Key')",
+            "OpenAI API",
+            "OpenRouter",
+            "Groq",
+            "Together",
+            "Mistral",
+            "Local Ollama (no key) at limpid.ollama.baseURL",
+            "Any OpenAI-compatible endpoint at limpid.openaiCompatible.baseURL"
+          ],
+          "default": "auto",
+          "markdownDescription": "Which language-model provider powers the LLM judgment lenses. `auto` prefers free Copilot, then any API key you've set. API keys are stored in the OS keychain via **Limpid: Set API Key** — never in settings."
+        },
+        "limpid.model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Override the model id for the selected provider (e.g. `gpt-4o`, `claude-sonnet-4-6`, `anthropic/claude-sonnet-4`). Empty = the provider's default."
+        },
         "limpid.audience": {
           "type": "string",
           "default": "",
           "markdownDescription": "Default target reader to judge audience-altitude against (e.g. `NeurIPS reviewer`, `ML newcomer`). Leave empty to let Limpid infer it; you can also change it per run in the panel."
         },
-        "limpid.anthropicApiKey": {
+        "limpid.ollama.baseURL": {
+          "type": "string",
+          "default": "http://localhost:11434/v1",
+          "markdownDescription": "Base URL for the local Ollama OpenAI-compatible endpoint (used when `limpid.provider` = `ollama`)."
+        },
+        "limpid.claudeCode.command": {
+          "type": "string",
+          "default": "claude",
+          "markdownDescription": "Path/name of the Claude Code CLI binary (used when `limpid.provider` = `claude-code`)."
+        },
+        "limpid.openaiCompatible.baseURL": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Anthropic API key used **only** when Copilot's Language Model API is unavailable. Leave empty to use Copilot, or to run deterministic-only (no LLM)."
+          "markdownDescription": "Base URL for a custom OpenAI-compatible endpoint (used when `limpid.provider` = `openai-compatible`). Reuses the `openai` key slot if a key is needed."
+        },
+        "limpid.openaiCompatible.model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Model id for the custom OpenAI-compatible endpoint."
         }
       }
     }
@@ -54,7 +103,7 @@
     "@coach/rubric": "*"
   },
   "devDependencies": {
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.91.0",
     "@types/node": "^22.9.0",
     "esbuild": "^0.21.3",
     "typescript": "^5.6.3"

@@ -7,14 +7,15 @@
  *   latex.extract(tex) → engine.analyze(text) → coach.review({…}) → CoachReport
  *
  * then renders the report into a webview panel. A model is chosen by `providers`
- * (Copilot LM API → Claude → none); without one the coach returns a
- * deterministic-only report. The panel is interactive: changing the audience
- * re-runs the review at a new altitude, and a finding's "reveal" button selects
- * the offending span back in the editor.
+ * (Copilot, Claude, OpenAI/OpenRouter/Groq/Together/Mistral, Ollama, or the Claude
+ * Code CLI; "auto" prefers free Copilot). Without one — or if the model errors —
+ * the coach returns a deterministic-only report. The panel is interactive: changing
+ * the audience re-runs the review at a new altitude, and a finding's "reveal"
+ * button selects the offending span back in the editor.
  */
 import * as vscode from "vscode";
 
-import type { CoachInput, CoachReport, Extraction } from "@coach/contract";
+import type { CoachInput, CoachReport, Extraction, LanguageModel } from "@coach/contract";
 import { extract } from "@coach/latex";
 import { analyze } from "@coach/engine";
 import { defaultRubric } from "@coach/rubric";
@@ -22,6 +23,7 @@ import { createCoach } from "@coach/coach";
 
 import { renderReport, DEFAULT_AUDIENCES } from "./render.js";
 import { pickLanguageModel } from "./providers.js";
+import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 
 const COMMAND_ID = "limpid.coach";
 const PANEL_VIEW_TYPE = "limpid.panel";
@@ -37,6 +39,7 @@ interface Session {
 }
 
 let coach = createCoach();
+let extContext: vscode.ExtensionContext | undefined;
 let activePanel: vscode.WebviewPanel | undefined;
 let session: Session | undefined;
 /** Last report per document URI, so the next run fills a GradeDelta. */
@@ -44,14 +47,18 @@ const lastReportByDoc = new Map<string, CoachReport>();
 
 export function activate(context: vscode.ExtensionContext): void {
   coach = createCoach();
+  extContext = context;
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMAND_ID, () => runCommand(context)),
+    vscode.commands.registerCommand("limpid.setApiKey", () => setApiKeyCommand(context)),
+    vscode.commands.registerCommand("limpid.clearApiKey", () => clearApiKeyCommand(context)),
   );
 }
 
 export function deactivate(): void {
   lastReportByDoc.clear();
   session = undefined;
+  extContext = undefined;
 }
 
 async function runCommand(context: vscode.ExtensionContext): Promise<void> {
@@ -104,20 +111,34 @@ async function runReview(
     async () => {
       const extraction: Extraction = extract(tex);
       const engine = analyze(extraction.text);
-      const model = await pickLanguageModel({ anthropicApiKey: configString("anthropicApiKey") });
 
-      const input: CoachInput = {
+      const base: CoachInput = {
         extraction,
         engine,
         rubric: defaultRubric,
         ...(audience ? { audience } : {}),
         ...(previous ? { previous } : {}),
-        ...(model ? { model } : {}),
       };
-      const report = await coach.review(input);
+
+      const model = extContext ? await pickLanguageModel(extContext) : null;
+      const report = model ? await reviewWithFallback(base, model) : await coach.review(base);
       return { ...report, target: { ...report.target, file: fileName } };
     },
   );
+}
+
+/** Review with the model; on any model error, fall back to a deterministic report. */
+async function reviewWithFallback(base: CoachInput, model: LanguageModel): Promise<CoachReport> {
+  try {
+    return await coach.review({ ...base, model });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    void vscode.window.showInformationMessage(
+      `Limpid: language model unavailable — showing a deterministic-only report. (${msg})`,
+    );
+    const det = await coach.review(base);
+    return { ...det, meta: { ...det.meta, note: `LLM unavailable: ${msg}` } };
+  }
 }
 
 /** Open (or reuse) the coach webview panel; wire its message handler once. */

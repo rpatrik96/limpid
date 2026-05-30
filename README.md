@@ -28,17 +28,36 @@ strips the markup, scores four dimensions, and renders a coaching panel.
 
 The mechanical checks are deterministic (auditable, instant). The four judgment
 calls that need understanding — stress position, paragraph cohesion, audience
-altitude, argument flow — use a language model when one is available:
+altitude, argument flow — use a language model. Pick one with `limpid.provider`
+(default `auto`):
 
-1. **Copilot** (VS Code Language Model API), else
-2. **Claude** (set `limpid.anthropicApiKey`), else
-3. **deterministic-only** — still a useful report, just without the LLM lenses.
+| `limpid.provider` | What it uses | Key? |
+|---|---|---|
+| `auto` | free Copilot, then any API key you've set | — |
+| `copilot` | GitHub Copilot via the VS Code LM API — **the free tier works** | no |
+| `claude-code` | the local Claude Code CLI (`claude -p`), your subscription auth | no |
+| `ollama` | a local model via Ollama (`limpid.ollama.baseURL`) | no |
+| `anthropic` | the Anthropic API | yes |
+| `openai` / `openrouter` / `groq` / `together` / `mistral` | those APIs | yes |
+| `openai-compatible` | any OpenAI-compatible endpoint (`limpid.openaiCompatible.baseURL`) | optional |
+
+With no provider available it runs **deterministic-only** — still a useful report,
+just without the four LLM lenses.
+
+**Keys live in the OS keychain, never settings.** Run **“Limpid: Set API Key”** to
+store one (masked input → `SecretStorage`), and **“Limpid: Clear API Key”** to
+remove it. The keyless paths (Copilot, Claude Code CLI, Ollama) need no key at all.
+
+> **Copilot Free is enough.** Sign into GitHub in VS Code and enable Copilot
+> (Free plan, no card); the first coach run asks for one-time consent. The Free
+> tier shares a small monthly request quota, so on `Blocked`/quota errors Limpid
+> degrades to a deterministic report and tells you.
 
 ## Try it
 
 ```bash
 npm install
-npm test                       # 176 tests across the core + extension
+npm test                       # 192 tests across the core + extension
 npm run build -w apps/extension
 ```
 
@@ -64,7 +83,7 @@ A front-end-agnostic core (so a web app can reuse it) plus one VS Code front-end
 | `@coach/latex` | `.tex` → extracted prose + coarse source map (pure) |
 | `@coach/rubric` | the canon as data: rules, 12 named patterns, thresholds, voice guards |
 | `@coach/coach` | LLM judgment (4 lenses + diagnosis) → `CoachReport` |
-| `apps/extension` | command + webview coach panel; Copilot/Claude providers |
+| `apps/extension` | command + webview coach panel; Copilot / Claude / OpenAI-compatible / Ollama / Claude-Code-CLI providers; SecretStorage keys |
 
 See [DESIGN.md](DESIGN.md) for the full spec and [AGENTS.md](AGENTS.md) for repo
 conventions.
@@ -73,6 +92,9 @@ conventions.
 
 v0/v1: the deterministic path and the webview (highlights, cards, audience
 control, reveal-in-editor) work end-to-end; the LLM lenses are implemented and
-unit-tested against a mock model, and wired to Copilot/Claude in the host. Not yet
-built: the editable-rules GUI, the learning center / gamification, trends over
-time, the public web surface, and inline `.tex` squiggles (all v2).
+unit-tested against a mock model, and wired in the host to Copilot, the Claude
+Code CLI, Ollama, and the API providers (Anthropic / OpenAI / OpenRouter / Groq /
+Together / Mistral) with SecretStorage-backed keys and graceful deterministic
+fallback. Not yet built: the editable-rules GUI, the learning center /
+gamification, trends over time, the public web surface, and inline `.tex`
+squiggles (all v2).
