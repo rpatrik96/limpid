@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.files.length === 0) {
     process.stderr.write(
-      "usage: limpid [--json] [--max-passive f] [--max-fk n] [--max-filler n] [--min-grade G] <file...>\n",
+      "usage: limpid [--json] [--register paper|blog|grant|sop] [--max-passive f] [--max-fk n] [--max-filler n] [--min-grade G] <file...>\n",
     );
     process.exit(2);
   }
@@ -30,7 +30,7 @@ async function main(): Promise<void> {
       process.stderr.write(`limpid: cannot read ${file}: ${e instanceof Error ? e.message : String(e)}\n`);
       continue;
     }
-    results.push(await checkText(text, file, opts.thresholds));
+    results.push(await checkText(text, file, opts.thresholds, opts.register));
   }
 
   process.stdout.write(formatResults(results, opts.json) + "\n");

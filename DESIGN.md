@@ -131,7 +131,9 @@ Key*, never settings. On any model error the host degrades to a deterministic re
   calibration from eval results, per-provider JSON-mode capability flags, a larger golden set, and a
   pure `@coach/providers` package (extract the adapters out of `apps/extension`) so the eval and a
   future web app run real providers cleanly. (Copilot is only evaluable inside the extension host.)
-- **Queued for v2 — (E)** editable rules + rule playground, **(F)** CI / pre-commit `limpid` CLI gate,
-  **(G)** multi-register coaching (blogs / grants / SOPs).
+- **Shipped — (E)** editable rules + rule playground (`.limpid/rules.json`, *Edit/Test Rule* commands;
+  pure `runDetector`/`parseUserRules`/`mergeRubric`), **(F)** the `limpid` CLI gate (`apps/cli`) +
+  example GitHub Action / pre-commit, **(G)** multi-register coaching (`limpid.register` / `--register`:
+  paper/blog/grant/sop, auto by file type). Also extracted the host-side adapters into `@coach/providers`.
 - **Deferred — (B)** public web app, **(C)** inline `.tex` squiggles, **(D)** learning center + trends,
   **(H)** section-aware deepening.

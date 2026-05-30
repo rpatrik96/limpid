@@ -3,7 +3,7 @@
  * deterministic pipeline (coach review with NO model) and gates on thresholds.
  */
 import { createCoach } from "@coach/coach";
-import { defaultRubric } from "@coach/rubric";
+import { defaultRubric, rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
 import { extract } from "@coach/latex";
 import { analyze } from "@coach/engine";
 
@@ -18,6 +18,7 @@ export interface CliOptions {
   files: string[];
   json: boolean;
   thresholds: Thresholds;
+  register: Register;
 }
 
 export interface FileResult {
@@ -33,6 +34,7 @@ export function parseArgs(argv: string[]): CliOptions {
   const files: string[] = [];
   const thresholds: Thresholds = {};
   let json = false;
+  let register: Register = "paper";
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -40,6 +42,11 @@ export function parseArgs(argv: string[]): CliOptions {
       case "--json":
         json = true;
         break;
+      case "--register": {
+        const v = argv[++i];
+        if (v && (REGISTERS as string[]).includes(v)) register = v as Register;
+        break;
+      }
       case "--max-passive":
         thresholds.maxPassive = Number(argv[++i]);
         break;
@@ -56,7 +63,7 @@ export function parseArgs(argv: string[]): CliOptions {
         if (a && !a.startsWith("--")) files.push(a);
     }
   }
-  return { files, json, thresholds };
+  return { files, json, thresholds, register };
 }
 
 /** Grade order, ascending, derived from the rubric's bands (by min threshold). */
@@ -73,10 +80,16 @@ const round = (x: number, d: number): number => {
   return Math.round(x * p) / p;
 };
 
-export async function checkText(text: string, file: string, t: Thresholds): Promise<FileResult> {
+export async function checkText(
+  text: string,
+  file: string,
+  t: Thresholds,
+  register: Register = "paper",
+): Promise<FileResult> {
   const extraction = extract(text);
   const engine = analyze(extraction.text);
-  const report = await createCoach().review({ extraction, engine, rubric: defaultRubric });
+  const rubric = rubricForRegister(register, defaultRubric);
+  const report = await createCoach().review({ extraction, engine, rubric });
   const m = report.metrics;
 
   const metrics = {

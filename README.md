@@ -79,6 +79,13 @@ scaffold and open `.limpid/rules.json` in your workspace. Each coach run merges
 your rules/patterns into the defaults (same `id` overrides, new `id` adds). Run a
 detector-backed rule against the current selection with **“Limpid: Test Rule”**.
 
+## Registers
+
+`limpid.register` (or the CLI `--register`) adapts the grade to the kind of
+writing — `paper` (default), `blog`, `grant`, `sop` — re-weighting the four
+dimensions and shifting the readability target so a blog post isn't graded like a
+paper. `auto` picks `blog` for `.md`/`.markdown`, `paper` otherwise.
+
 ## Architecture
 
 A front-end-agnostic core (so a web app can reuse it) plus one VS Code front-end:

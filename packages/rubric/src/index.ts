@@ -34,3 +34,5 @@ export { runDetector } from "./detector.js";
 export type { DetectorMatch } from "./detector.js";
 export { parseUserRules, mergeRubric } from "./userRules.js";
 export type { ParseResult } from "./userRules.js";
+export { rubricForRegister, registerNote, REGISTERS } from "./register.js";
+export type { Register } from "./register.js";

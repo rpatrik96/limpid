@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -72,6 +72,19 @@
           "type": "string",
           "default": "",
           "markdownDescription": "Default target reader to judge audience-altitude against (e.g. `NeurIPS reviewer`, `ML newcomer`). Leave empty to let Limpid infer it; you can also change it per run in the panel."
+        },
+        "limpid.register": {
+          "type": "string",
+          "enum": ["auto", "paper", "blog", "grant", "sop"],
+          "enumDescriptions": [
+            "Auto: blog for .md/.markdown, paper otherwise",
+            "Academic paper (precision + clarity carry the grade)",
+            "Blog / general audience (prize accessibility; easier readability target)",
+            "Grant / proposal (clarity + significance)",
+            "Statement of purpose (clear first-person narrative)"
+          ],
+          "default": "auto",
+          "markdownDescription": "Writing register — re-weights the grade and shifts readability targets so a blog post isn't graded like a paper. `auto` picks by file type."
         },
         "limpid.ollama.baseURL": {
           "type": "string",

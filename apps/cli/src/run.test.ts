@@ -15,6 +15,12 @@ describe("parseArgs", () => {
     const o = parseArgs(["--unknown", "x.tex"]);
     expect(o.files).toEqual(["x.tex"]);
   });
+
+  it("defaults register to paper and parses --register (bogus → paper)", () => {
+    expect(parseArgs(["x.tex"]).register).toBe("paper");
+    expect(parseArgs(["--register", "blog", "x.tex"]).register).toBe("blog");
+    expect(parseArgs(["--register", "bogus", "x.tex"]).register).toBe("paper");
+  });
 });
 
 describe("checkText", () => {

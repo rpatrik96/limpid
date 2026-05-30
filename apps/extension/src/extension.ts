@@ -24,6 +24,7 @@ import { renderReport, DEFAULT_AUDIENCES } from "./render.js";
 import { pickLanguageModel } from "./providers.js";
 import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
+import { rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
 
 const COMMAND_ID = "limpid.coach";
 const PANEL_VIEW_TYPE = "limpid.panel";
@@ -101,6 +102,13 @@ function configString(key: string): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+/** Resolve the register from config (paper/blog/grant/sop) or auto-detect by file type. */
+function resolveRegister(fileName: string): Register {
+  const cfg = configString("register");
+  if (cfg && cfg !== "auto" && (REGISTERS as string[]).includes(cfg)) return cfg as Register;
+  return /\.(md|markdown)$/i.test(fileName) ? "blog" : "paper";
+}
+
 /** The documented pipeline (extract → analyze → review), with progress UI. */
 async function runReview(
   tex: string,
@@ -113,10 +121,13 @@ async function runReview(
     async () => {
       const extraction: Extraction = extract(tex);
       const engine = analyze(extraction.text);
-      const { rubric, errors } = await loadRubric();
-      if (errors.length) {
-        void vscode.window.showWarningMessage(`Limpid rules: ${errors.length} issue(s) — ${errors[0]}`);
+      const loaded = await loadRubric();
+      if (loaded.errors.length) {
+        void vscode.window.showWarningMessage(
+          `Limpid rules: ${loaded.errors.length} issue(s) — ${loaded.errors[0]}`,
+        );
       }
+      const rubric = rubricForRegister(resolveRegister(fileName), loaded.rubric);
 
       const base: CoachInput = {
         extraction,
