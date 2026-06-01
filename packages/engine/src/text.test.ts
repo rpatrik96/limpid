@@ -12,11 +12,7 @@ describe("splitSentences", () => {
   it("splits on terminal punctuation followed by a capital", () => {
     const text = "The model works. It is fast! Is it correct?";
     const s = splitSentences(text);
-    expect(s.map((x) => x.text)).toEqual([
-      "The model works.",
-      "It is fast!",
-      "Is it correct?",
-    ]);
+    expect(s.map((x) => x.text)).toEqual(["The model works.", "It is fast!", "Is it correct?"]);
   });
 
   it("returns spans that index back into the original text", () => {

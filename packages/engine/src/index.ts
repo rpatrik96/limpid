@@ -22,7 +22,6 @@ import type {
 import {
   splitSentences,
   tokenizeWords,
-  countWords,
   countSyllables,
   fleschKincaid,
   fleschReadingEase,
@@ -111,21 +110,17 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   const adverbCount = adverbHits.length;
 
   // ── Passive (per sentence, heuristic) ────────────────────────────────────────
-  const passiveSentences: { sentence: typeof sentences[number]; span: Span }[] = [];
+  const passiveSentences: { sentence: (typeof sentences)[number]; span: Span }[] = [];
   for (const s of sentences) {
     if (!isPassive(s.text)) continue;
     const local = passiveMatch(s.text);
-    const sp = local
-      ? span(s.start + local.start, s.start + local.end)
-      : span(s.start, s.end);
+    const sp = local ? span(s.start + local.start, s.start + local.end) : span(s.start, s.end);
     passiveSentences.push({ sentence: s, span: sp });
   }
-  const passiveFraction = sentences.length
-    ? passiveSentences.length / sentences.length
-    : 0;
+  const passiveFraction = sentences.length ? passiveSentences.length / sentences.length : 0;
 
   // ── Weak openers ─────────────────────────────────────────────────────────────
-  const weakOpeners: { sentence: typeof sentences[number]; opener: string }[] = [];
+  const weakOpeners: { sentence: (typeof sentences)[number]; opener: string }[] = [];
   for (const s of sentences) {
     const opener = startsWithWeak(s.text, WEAK_OPENERS);
     if (opener) weakOpeners.push({ sentence: s, opener });
@@ -164,7 +159,8 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
       why: "Empty intensifiers and discourse fillers dilute the claim without changing its meaning.",
       suggestion: `Delete "${h.text}" or replace it with a precise word.`,
       spans: [span(h.start, h.end)],
-      source: "Orwell, Politics and the English Language (1946); Strunk & White, The Elements of Style",
+      source:
+        "Orwell, Politics and the English Language (1946); Strunk & White, The Elements of Style",
       confidence: 1,
     });
   }

@@ -39,7 +39,11 @@ export async function loadRubric(): Promise<LoadedRubric> {
     json = JSON.parse(new TextDecoder().decode(raw));
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return { rubric: defaultRubric, errors: [`.limpid/rules.json: invalid JSON (${msg})`], loaded: true };
+    return {
+      rubric: defaultRubric,
+      errors: [`.limpid/rules.json: invalid JSON (${msg})`],
+      loaded: true,
+    };
   }
 
   const parsed = parseUserRules(json);
@@ -117,7 +121,9 @@ export async function testRuleCommand(): Promise<void> {
   if (!detector) return;
   const matches = runDetector(detector, text);
   if (matches.length === 0) {
-    void vscode.window.showInformationMessage(`Limpid: "${pick.rule.name}" — no matches in the selection.`);
+    void vscode.window.showInformationMessage(
+      `Limpid: "${pick.rule.name}" — no matches in the selection.`,
+    );
     return;
   }
   const sample = matches

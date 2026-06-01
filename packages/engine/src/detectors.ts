@@ -7,11 +7,7 @@
  * non-adverb "-ly"-ending nouns (only, family, …) are NOT adverbs.
  */
 
-import {
-  ADVERB_STOPLIST,
-  BE_VERBS,
-  IRREGULAR_PARTICIPLES,
-} from "./wordlists.js";
+import { ADVERB_STOPLIST, BE_VERBS, IRREGULAR_PARTICIPLES } from "./wordlists.js";
 import type { SentenceSpan } from "./text.js";
 
 export interface Match {
@@ -25,7 +21,10 @@ export interface Match {
 /** Find every whole-word occurrence of any term in `words`, with spans. */
 export function findWords(text: string, words: readonly string[]): Match[] {
   if (words.length === 0) return [];
-  const alt = words.map(escapeRegExp).sort((a, b) => b.length - a.length).join("|");
+  const alt = words
+    .map(escapeRegExp)
+    .sort((a, b) => b.length - a.length)
+    .join("|");
   const re = new RegExp(`\\b(?:${alt})\\b`, "gi");
   const out: Match[] = [];
   let m: RegExpExecArray | null;
@@ -54,8 +53,7 @@ export function findPhrases(text: string, phrases: readonly string[]): Match[] {
 
 // ── Passive voice (heuristic) ────────────────────────────────────────────────
 
-const PARTICIPLE_ALT =
-  "(?:\\w+ed|" + IRREGULAR_PARTICIPLES.map(escapeRegExp).join("|") + ")";
+const PARTICIPLE_ALT = "(?:\\w+ed|" + IRREGULAR_PARTICIPLES.map(escapeRegExp).join("|") + ")";
 
 /**
  * Passive pattern, ported from PASSIVE_PATTERN:
@@ -71,11 +69,7 @@ const PARTICIPLE_ALT =
  * passive holds because "important" is not -ed and not in the irregular list.
  */
 const PASSIVE_RE = new RegExp(
-  "\\b(?:" +
-    BE_VERBS.join("|") +
-    ")\\s+(?:\\w+\\s+){0,3}" +
-    PARTICIPLE_ALT +
-    "\\b",
+  "\\b(?:" + BE_VERBS.join("|") + ")\\s+(?:\\w+\\s+){0,3}" + PARTICIPLE_ALT + "\\b",
   "i",
 );
 
@@ -101,10 +95,7 @@ export function passiveMatch(sentence: string): { start: number; end: number } |
 // ── Weak openers ─────────────────────────────────────────────────────────────
 
 /** True if the (trimmed, lowercased) sentence starts with a weak opener. */
-export function startsWithWeak(
-  sentence: string,
-  openers: readonly string[],
-): string | null {
+export function startsWithWeak(sentence: string, openers: readonly string[]): string | null {
   const low = sentence.trimStart().toLowerCase();
   for (const w of openers) {
     if (low.startsWith(w)) return w;

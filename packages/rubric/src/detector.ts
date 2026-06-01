@@ -16,7 +16,10 @@ const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\
 export function runDetector(detector: RuleDetector, text: string): DetectorMatch[] {
   switch (detector.kind) {
     case "words":
-      return matchAlternation(detector.words.map((w) => `\\b${escapeRegExp(w)}\\b`), text);
+      return matchAlternation(
+        detector.words.map((w) => `\\b${escapeRegExp(w)}\\b`),
+        text,
+      );
     case "phrases":
       return matchAlternation(detector.phrases.map(escapeRegExp), text);
     case "regex":

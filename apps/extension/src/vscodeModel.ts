@@ -60,14 +60,17 @@ function asReadableError(err: unknown): Error {
       return new Error("Copilot access not granted (consent denied).");
     }
     if (err.code === vscode.LanguageModelError.Blocked.name) {
-      return new Error("Copilot request blocked — likely the monthly Free quota or a content filter.");
+      return new Error(
+        "Copilot request blocked — likely the monthly Free quota or a content filter.",
+      );
     }
     if (err.code === vscode.LanguageModelError.NotFound.name) {
       return new Error("The requested Copilot model is unavailable on this plan.");
     }
   }
   const cause = err instanceof Error && err.cause instanceof Error ? err.cause.message : "";
-  if (cause.includes("off_topic")) return new Error("Copilot declined the request (off-topic filter).");
+  if (cause.includes("off_topic"))
+    return new Error("Copilot declined the request (off-topic filter).");
   return err instanceof Error ? err : new Error(String(err));
 }
 

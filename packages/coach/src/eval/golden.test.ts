@@ -42,14 +42,20 @@ describe("evaluateExpectations", () => {
 
   it("checks altitude mentions against verdict + assumedAudience", () => {
     const r = report({
-      altitude: { assumedAudience: "a reviewer", inferred: true, verdict: "over-explained for a reviewer" },
+      altitude: {
+        assumedAudience: "a reviewer",
+        inferred: true,
+        verdict: "over-explained for a reviewer",
+      },
     });
     expect(evaluateExpectations(r, { altitudeMentions: "over" })[0]?.ok).toBe(true);
     expect(evaluateExpectations(r, { altitudeMentions: "jargon" })[0]?.ok).toBe(false);
   });
 
   it("counts only LLM-method findings for minLlmFindings", () => {
-    const r = report({ findings: [finding({ method: "llm" }), finding({ method: "deterministic" })] });
+    const r = report({
+      findings: [finding({ method: "llm" }), finding({ method: "deterministic" })],
+    });
     expect(evaluateExpectations(r, { minLlmFindings: 1 })[0]?.ok).toBe(true);
     expect(evaluateExpectations(r, { minLlmFindings: 2 })[0]?.ok).toBe(false);
   });
@@ -82,7 +88,11 @@ describe("runEval (mechanics, against the mock)", () => {
         stressTopic: [],
         cohesion: [],
         argumentFlow: [{ message: "buried lede" }],
-        altitude: { assumedAudience: "ML reviewer", inferred: true, verdict: "over-explained for a reviewer" },
+        altitude: {
+          assumedAudience: "ML reviewer",
+          inferred: true,
+          verdict: "over-explained for a reviewer",
+        },
         patterns: [],
         precisionScore: 6,
       },
@@ -100,17 +110,12 @@ describe("runEval (mechanics, against the mock)", () => {
 const BASE = process.env["LIMPID_EVAL_BASE_URL"];
 
 describe.skipIf(!BASE)("runEval (real provider via env)", () => {
-  it(
-    "reports a pass rate against the configured endpoint",
-    async () => {
-      const model = fromEnv(process.env);
-      expect(model).not.toBeNull();
-      if (!model) return;
-      const out = await runEval(model, GOLDEN_CASES);
-      // eslint-disable-next-line no-console
-      console.log("\n" + formatEvalReport(out) + "\n");
-      expect(out.total).toBe(GOLDEN_CASES.length);
-    },
-    120_000,
-  );
+  it("reports a pass rate against the configured endpoint", async () => {
+    const model = fromEnv(process.env);
+    expect(model).not.toBeNull();
+    if (!model) return;
+    const out = await runEval(model, GOLDEN_CASES);
+    console.log("\n" + formatEvalReport(out) + "\n");
+    expect(out.total).toBe(GOLDEN_CASES.length);
+  }, 120_000);
 });

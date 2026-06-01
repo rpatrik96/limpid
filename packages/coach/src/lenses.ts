@@ -175,9 +175,7 @@ export function parseLensResult(raw: string): LensResult | null {
   if (precisionScore === null) return null;
 
   const patterns: LensPatternHit[] = Array.isArray(parsed.patterns)
-    ? parsed.patterns
-        .map(validatePatternHit)
-        .filter((p): p is LensPatternHit => p !== null)
+    ? parsed.patterns.map(validatePatternHit).filter((p): p is LensPatternHit => p !== null)
     : [];
 
   return {
@@ -240,10 +238,7 @@ export function extractJson(raw: string): string | null {
 // ── Mapping helpers (lens → contract) ────────────────────────────────────────
 
 /** Clamp a model-supplied severity string to the contract Severity union. */
-export function coerceSeverity(
-  raw: string | undefined,
-  fallback: Severity,
-): Severity {
+export function coerceSeverity(raw: string | undefined, fallback: Severity): Severity {
   switch ((raw ?? "").toLowerCase()) {
     case "info":
       return "info";
@@ -259,10 +254,7 @@ export function coerceSeverity(
 }
 
 /** Clamp + dedupe lens spans into contract spans bounded by the text length. */
-export function coerceSpans(
-  spans: LensSpan[] | undefined,
-  textLength: number,
-): Span[] {
+export function coerceSpans(spans: LensSpan[] | undefined, textLength: number): Span[] {
   if (!spans) return [];
   const out: Span[] = [];
   for (const s of spans) {

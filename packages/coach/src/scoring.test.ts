@@ -83,10 +83,7 @@ describe("scoreClarity", () => {
   });
 
   test("hedge + filler densities lower clarity", () => {
-    const noisy = scoreClarity(
-      metrics({ hedgeDensity: 4, fillerDensity: 5 }),
-      introThreshold,
-    );
+    const noisy = scoreClarity(metrics({ hedgeDensity: 4, fillerDensity: 5 }), introThreshold);
     expect(noisy).toBeLessThan(8);
   });
 });
@@ -102,20 +99,14 @@ describe("scoreFlow", () => {
   });
 
   test("single-sentence input stays neutral-high", () => {
-    const one = scoreFlow(
-      metrics({ sentenceStats: { count: 1 } as Metrics["sentenceStats"] }),
-    );
+    const one = scoreFlow(metrics({ sentenceStats: { count: 1 } as Metrics["sentenceStats"] }));
     expect(one).toBe(8);
   });
 });
 
 describe("computeDeterministicScores", () => {
   test("precision is the neutral baseline", () => {
-    const det = computeDeterministicScores(
-      metrics(),
-      defaultRubric.thresholds,
-      "introduction",
-    );
+    const det = computeDeterministicScores(metrics(), defaultRubric.thresholds, "introduction");
     expect(det.precision).toBe(PRECISION_BASELINE);
   });
 

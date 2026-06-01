@@ -1,0 +1,87 @@
+name: Bug report
+description: Report a defect in Limpid (the extension, the CLI, or a provider).
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please give us enough to reproduce it.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: A clear description of the bug and what you expected instead.
+      placeholder: When I run "Coach a section…" on a paragraph, the Coach view stays empty.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. A short sample of the prose you scored helps.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it occur
+      options:
+        - VS Code extension
+        - CLI (limpid)
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      description: Which judgment provider was active.
+      options:
+        - Copilot
+        - Claude Code CLI
+        - Ollama
+        - Anthropic
+        - OpenAI
+        - OpenRouter
+        - Groq
+        - Together
+        - Mistral
+        - Not applicable / unknown
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Limpid version
+      placeholder: e.g. 0.1.0 (from the extension or `limpid --version`)
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, VS Code version, and Node version where relevant.
+      placeholder: macOS 15.5, VS Code 1.99, Node 22.11
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant output from the "Limpid" output channel or the CLI. Redact secrets.
+      render: shell
+    validations:
+      required: false

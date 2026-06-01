@@ -21,19 +21,9 @@ import type {
 } from "@coach/contract";
 
 import { classifyTitle } from "./sections.js";
-import {
-  preprocessLines,
-  stripComment,
-  transformInline,
-  type SourceLine,
-} from "./strip.js";
+import { preprocessLines, transformInline, type SourceLine } from "./strip.js";
 
-export {
-  preprocessLines,
-  transformInline,
-  stripComment,
-  type SourceLine,
-} from "./strip.js";
+export { preprocessLines, transformInline, stripComment, type SourceLine } from "./strip.js";
 export { classifyTitle, findSourceSections } from "./sections.js";
 export type { SourceSection } from "./sections.js";
 
@@ -85,7 +75,12 @@ function detectMarkers(lines: SourceLine[]): SectionMarker[] {
       continue;
     }
     if (ABSTRACT_BEGIN_RE.test(ln.text)) {
-      markers.push({ lineIndex: i, kind: "abstract", title: "Abstract", sourceLine: ln.sourceLine });
+      markers.push({
+        lineIndex: i,
+        kind: "abstract",
+        title: "Abstract",
+        sourceLine: ln.sourceLine,
+      });
     }
   }
   return markers;

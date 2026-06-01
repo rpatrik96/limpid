@@ -148,7 +148,12 @@ export function applyVoiceGuards(
       } else {
         // Ambiguous hedge — keep but down-weight one step.
         suppressed.push(`down-weighted ${f.ruleId} (voice guard: ambiguous hedge)`);
-        out.push(maybeSoften({ ...f, severity: downgrade(f.severity), confidence: scaleConfidence(f.confidence) }, lowProseConfidence));
+        out.push(
+          maybeSoften(
+            { ...f, severity: downgrade(f.severity), confidence: scaleConfidence(f.confidence) },
+            lowProseConfidence,
+          ),
+        );
       }
       continue;
     }

@@ -14,12 +14,7 @@ import { analyze } from "@coach/engine";
 import { defaultRubric } from "@coach/rubric";
 import { createCoach, MockLanguageModel } from "@coach/coach";
 
-import {
-  collectMarks,
-  escapeHtml,
-  renderHighlightedText,
-  renderReport,
-} from "./render.js";
+import { collectMarks, escapeHtml, renderHighlightedText, renderReport } from "./render.js";
 
 const TEX = String.raw`
 \section{Introduction}
@@ -140,7 +135,13 @@ describe("collectMarks / renderHighlightedText", () => {
 
   it("clamps out-of-range spans and drops empty/inverted ones", () => {
     const marks = collectMarks(
-      [finding([{ start: -5, end: 3 }, { start: 18, end: 999 }, { start: 7, end: 7 }])],
+      [
+        finding([
+          { start: -5, end: 3 },
+          { start: 18, end: 999 },
+          { start: 7, end: 7 },
+        ]),
+      ],
       text.length,
     );
     expect(marks.map((m) => [m.start, m.end])).toEqual([

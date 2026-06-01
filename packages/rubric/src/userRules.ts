@@ -41,7 +41,11 @@ function validateDetector(v: unknown): RuleDetector | undefined {
     }
     case "regex":
       return str(v["pattern"])
-        ? { kind: "regex", pattern: v["pattern"], ...(str(v["flags"]) ? { flags: v["flags"] } : {}) }
+        ? {
+            kind: "regex",
+            pattern: v["pattern"],
+            ...(str(v["flags"]) ? { flags: v["flags"] } : {}),
+          }
         : undefined;
     default:
       return undefined;

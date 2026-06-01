@@ -10,7 +10,10 @@ describe("runDetector", () => {
   });
 
   it("phrases: substring match", () => {
-    const m = runDetector({ kind: "phrases", phrases: ["in order to"] }, "We do this in order to win.");
+    const m = runDetector(
+      { kind: "phrases", phrases: ["in order to"] },
+      "We do this in order to win.",
+    );
     expect(m).toHaveLength(1);
     expect(m[0]?.text).toBe("in order to");
   });

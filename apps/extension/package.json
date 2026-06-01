@@ -9,8 +9,19 @@
   "engines": {
     "vscode": "^1.91.0"
   },
-  "categories": ["Education", "Linters", "Other"],
-  "keywords": ["writing", "latex", "academic", "prose", "clarity", "coach"],
+  "categories": [
+    "Education",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "writing",
+    "latex",
+    "academic",
+    "prose",
+    "clarity",
+    "coach"
+  ],
   "activationEvents": [],
   "main": "./dist/extension.cjs",
   "contributes": {
@@ -51,7 +62,19 @@
       "properties": {
         "limpid.provider": {
           "type": "string",
-          "enum": ["auto", "copilot", "claude-code", "anthropic", "openai", "openrouter", "groq", "together", "mistral", "ollama", "openai-compatible"],
+          "enum": [
+            "auto",
+            "copilot",
+            "claude-code",
+            "anthropic",
+            "openai",
+            "openrouter",
+            "groq",
+            "together",
+            "mistral",
+            "ollama",
+            "openai-compatible"
+          ],
           "enumDescriptions": [
             "Prefer free Copilot, then any configured API key (recommended)",
             "GitHub Copilot via the VS Code Language Model API (free tier works)",
@@ -80,7 +103,13 @@
         },
         "limpid.register": {
           "type": "string",
-          "enum": ["auto", "paper", "blog", "grant", "sop"],
+          "enum": [
+            "auto",
+            "paper",
+            "blog",
+            "grant",
+            "sop"
+          ],
           "enumDescriptions": [
             "Auto: blog for .md/.markdown, paper otherwise",
             "Academic paper (precision + clarity carry the grade)",

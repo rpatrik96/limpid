@@ -32,8 +32,7 @@ describe("sentenceStats", () => {
 
   // Each fixture sentence must START WITH A CAPITAL so the splitter (which needs
   // [.!?] + whitespace + capital) actually separates them.
-  const sentenceOf = (n: number): string =>
-    "Word " + "word ".repeat(n - 1).trim() + ".";
+  const sentenceOf = (n: number): string => "Word " + "word ".repeat(n - 1).trim() + ".";
 
   it("computes mean, std, and cv over sentence lengths", () => {
     const text = `Short one here. ${sentenceOf(40)}`;
@@ -55,9 +54,7 @@ describe("sentenceStats", () => {
   });
 
   it("buckets short<=14, long>=30, medium between", () => {
-    const sents = splitSentences(
-      `${sentenceOf(10)} ${sentenceOf(20)} ${sentenceOf(35)}`,
-    );
+    const sents = splitSentences(`${sentenceOf(10)} ${sentenceOf(20)} ${sentenceOf(35)}`);
     const s = sentenceStats(sents);
     expect(s.buckets).toEqual({ short: 1, medium: 1, long: 1 });
   });

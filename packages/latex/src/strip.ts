@@ -45,11 +45,6 @@ export interface SourceLine {
   sourceLine: number;
 }
 
-/** Escape a string for use inside a RegExp. */
-function reEscape(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 const DROP_ENV_SET = new Set<string>(DROP_ENVS);
 
 /**
@@ -153,7 +148,8 @@ function scanEnvTransitions(fragment: string, dropStack: string[]): void {
   }
 }
 
-const CITE_LIKE = /\\(?:cite[a-zA-Z]*|cref|Cref|ref|eqref|autoref|pageref|nameref)\*?\s*(?:\[[^\]]*\])?\s*\{[^}]*\}/g;
+const CITE_LIKE =
+  /\\(?:cite[a-zA-Z]*|cref|Cref|ref|eqref|autoref|pageref|nameref)\*?\s*(?:\[[^\]]*\])?\s*\{[^}]*\}/g;
 const SECTIONING =
   /\\(?:section|subsection|subsubsection|paragraph|subparagraph)\*?\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g;
 const ABSTRACT_BEGIN = /\\begin\s*\{abstract\}/g;

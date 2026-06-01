@@ -17,13 +17,13 @@ After `npm install` the binary is also linked as `limpid` in `node_modules/.bin`
 
 ## Flags
 
-| Flag | Effect |
-|---|---|
+| Flag                | Effect                                                  |
+| ------------------- | ------------------------------------------------------- |
 | `--max-passive <f>` | fail if passive-voice fraction exceeds `f` (e.g. `0.4`) |
-| `--max-fk <n>` | fail if Flesch–Kincaid grade exceeds `n` |
-| `--max-filler <n>` | fail if filler density (per 100 words) exceeds `n` |
-| `--min-grade <G>` | fail if the grade is below `G` (e.g. `C`) |
-| `--json` | emit JSON instead of one line per file |
+| `--max-fk <n>`      | fail if Flesch–Kincaid grade exceeds `n`                |
+| `--max-filler <n>`  | fail if filler density (per 100 words) exceeds `n`      |
+| `--min-grade <G>`   | fail if the grade is below `G` (e.g. `C`)               |
+| `--json`            | emit JSON instead of one line per file                  |
 
 With no thresholds it just reports (exit 0). Any violation, or an unreadable file,
 exits `1` — so it gates a CI job or a pre-commit hook.

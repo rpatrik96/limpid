@@ -44,9 +44,7 @@ function renderEvidence(findings: Finding[]): string {
   if (findings.length === 0) return "(no deterministic findings)";
   const lines = findings.slice(0, 40).map((f) => {
     const where =
-      f.spans.length > 0 && f.spans[0]
-        ? `@${f.spans[0].start}-${f.spans[0].end}`
-        : "@doc";
+      f.spans.length > 0 && f.spans[0] ? `@${f.spans[0].start}-${f.spans[0].end}` : "@doc";
     return `- [${f.category}/${f.severity}] ${f.ruleId} ${where}: ${f.message}`;
   });
   const more = findings.length > 40 ? `\n… and ${findings.length - 40} more.` : "";
@@ -55,9 +53,7 @@ function renderEvidence(findings: Finding[]): string {
 
 /** Render the named patterns the model may diagnose (id + one-line definition). */
 function renderPatterns(patterns: DiagnosisPattern[]): string {
-  return patterns
-    .map((p) => `- ${p.id} (${p.name}): ${p.definition}`)
-    .join("\n");
+  return patterns.map((p) => `- ${p.id} (${p.name}): ${p.definition}`).join("\n");
 }
 
 function renderMetrics(engine: EngineResult): string {

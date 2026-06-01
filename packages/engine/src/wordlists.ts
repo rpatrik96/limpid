@@ -263,15 +263,7 @@ export const IRREGULAR_PARTICIPLES: readonly string[] = [
 ];
 
 /** Be-verbs that head a passive construction. */
-export const BE_VERBS: readonly string[] = [
-  "is",
-  "are",
-  "was",
-  "were",
-  "be",
-  "been",
-  "being",
-];
+export const BE_VERBS: readonly string[] = ["is", "are", "was", "were", "be", "been", "being"];
 
 /**
  * Adverb stoplist: tokens ending in "-ly" that are NOT adverbs (or are common

@@ -27,7 +27,9 @@ async function main(): Promise<void> {
       text = readFileSync(file, "utf8");
     } catch (e) {
       readError = true;
-      process.stderr.write(`limpid: cannot read ${file}: ${e instanceof Error ? e.message : String(e)}\n`);
+      process.stderr.write(
+        `limpid: cannot read ${file}: ${e instanceof Error ? e.message : String(e)}\n`,
+      );
       continue;
     }
     results.push(await checkText(text, file, opts.thresholds, opts.register));

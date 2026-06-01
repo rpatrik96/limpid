@@ -56,7 +56,8 @@ const DEFAULT_LENS: LensResult = {
       message: "The main claim appears in sentence 3; the paragraph warms up first.",
       why: "Readers use sentence 1 as the interpretive frame; a buried lede forces a re-read.",
       suggestion: "Lead with the claim, then support it.",
-      before: "Distribution shift is a long-standing concern. Many methods address it. We find test-time adaptation wins.",
+      before:
+        "Distribution shift is a long-standing concern. Many methods address it. We find test-time adaptation wins.",
       after: "Test-time adaptation outperforms prior methods under distribution shift.",
       spans: [{ start: 0, end: 30 }],
       severity: "warning",

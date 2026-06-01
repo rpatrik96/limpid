@@ -101,7 +101,14 @@ export function findSourceSections(tex: string): SourceSection[] {
         break;
       }
     }
-    sections.push({ title: h.title, kind: classifyTitle(h.title), command: h.command, level: h.level, start: h.start, end });
+    sections.push({
+      title: h.title,
+      kind: classifyTitle(h.title),
+      command: h.command,
+      level: h.level,
+      start: h.start,
+      end,
+    });
   }
 
   const absRe = /\\begin\{abstract\}/g;

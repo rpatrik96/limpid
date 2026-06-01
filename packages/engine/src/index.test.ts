@@ -25,9 +25,7 @@ describe("analyze — end to end", () => {
     const longDoc = analyze(
       "The disentangled variational representation learning optimization procedure converges slowly under heavy regularization across many epochs.",
     );
-    expect(Number.isFinite(shortDoc.metrics.readability.fleschKincaidGrade)).toBe(
-      true,
-    );
+    expect(Number.isFinite(shortDoc.metrics.readability.fleschKincaidGrade)).toBe(true);
     expect(longDoc.metrics.readability.fleschKincaidGrade).toBeGreaterThan(
       shortDoc.metrics.readability.fleschKincaidGrade,
     );
@@ -83,8 +81,7 @@ describe("analyze — end to end", () => {
   });
 
   it("flags adverb overuse only above threshold", () => {
-    const text =
-      "It quickly slowly carefully poorly badly rapidly converged.";
+    const text = "It quickly slowly carefully poorly badly rapidly converged.";
     const r = analyze(text);
     expect(r.metrics.adverbDensity).toBeGreaterThan(4);
     expect(byRule(r.findings, "hemingway.adverb-overuse")).toHaveLength(1);

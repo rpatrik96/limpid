@@ -57,7 +57,11 @@ async function buildOpenAIPreset(
 
 function buildOllama(): LanguageModel {
   const baseURL = cfg<string>("ollama.baseURL")?.trim() || "http://localhost:11434/v1";
-  return new OpenAICompatibleModel({ baseURL, model: modelOverride() ?? "llama3.1", label: "ollama" });
+  return new OpenAICompatibleModel({
+    baseURL,
+    model: modelOverride() ?? "llama3.1",
+    label: "ollama",
+  });
 }
 
 function buildClaudeCode(): LanguageModel {

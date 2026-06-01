@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-demo'; script-src 'nonce-demo';">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Limpid</title>
+<style nonce="demo">
+:root { color-scheme: light dark; }
+body { font-family: var(--vscode-font-family, system-ui, sans-serif); margin: 0; padding: 1rem; line-height: 1.5; }
+h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin: 1.25rem 0 0.5rem; }
+.topbar { display: flex; align-items: center; gap: 1rem; }
+.grade { font-size: 2rem; font-weight: 700; border: 2px solid currentColor; border-radius: 0.5rem; padding: 0.25rem 0.75rem; }
+.section-name { font-weight: 600; }
+.delta { font-size: 0.85rem; opacity: 0.8; }
+.meta-note { margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; border-radius: 0.4rem; background: rgba(127,127,127,0.12); }
+.controls { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.85rem; }
+.controls label { opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.75rem; }
+.controls select { background: var(--vscode-dropdown-background, rgba(127,127,127,0.15)); color: inherit; border: 1px solid rgba(127,127,127,0.4); border-radius: 0.3rem; padding: 0.15rem 0.4rem; }
+.altitude { margin-top: 0.5rem; padding: 0.6rem 0.75rem; border-left: 3px solid #6aa0ff; background: rgba(106,160,255,0.08); border-radius: 0.3rem; }
+.alt-verdict { opacity: 0.85; }
+.signals { margin: 0.25rem 0 0; padding-left: 1.2rem; font-size: 0.85rem; opacity: 0.8; }
+.dim { display: grid; grid-template-columns: 9rem 1fr 2.5rem; align-items: center; gap: 0.5rem; margin: 0.2rem 0; }
+.dim-label em { opacity: 0.6; font-style: normal; }
+.dim-bar { background: rgba(127,127,127,0.2); border-radius: 0.3rem; height: 0.6rem; overflow: hidden; }
+.dim-fill { height: 100%; background: linear-gradient(90deg, #d97a45, #5bbf6a); }
+.dim-note { grid-column: 1 / -1; font-size: 0.8rem; opacity: 0.7; }
+.prose-body { white-space: pre-wrap; padding: 0.75rem; border-radius: 0.4rem; background: rgba(127,127,127,0.06); }
+mark { background: transparent; border-bottom: 2px solid; padding: 0 0.05em; }
+mark.sev-info { border-color: #6aa0ff; }
+mark.sev-suggestion { border-color: #5bbf6a; }
+mark.sev-warning { border-color: #e0a44a; }
+mark.sev-error { border-color: #e0574a; }
+.card { border: 1px solid rgba(127,127,127,0.25); border-left-width: 3px; border-radius: 0.4rem; padding: 0.6rem 0.75rem; margin: 0.5rem 0; }
+.card.sev-warning { border-left-color: #e0a44a; }
+.card.sev-error { border-left-color: #e0574a; }
+.card.sev-suggestion { border-left-color: #5bbf6a; }
+.card.sev-info { border-left-color: #6aa0ff; }
+.card-head { display: flex; align-items: center; gap: 0.5rem; }
+.badge { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.1rem 0.4rem; border-radius: 0.3rem; background: rgba(127,127,127,0.18); }
+.card-title { font-weight: 600; }
+.reveal { margin-left: auto; font-size: 0.7rem; padding: 0.1rem 0.45rem; border: 1px solid rgba(127,127,127,0.4); border-radius: 0.3rem; background: transparent; color: inherit; cursor: pointer; }
+.reveal:hover { background: rgba(127,127,127,0.15); }
+.card-msg { margin: 0.35rem 0; }
+.ba { display: grid; gap: 0.25rem; margin: 0.4rem 0; font-size: 0.9rem; }
+.before { padding: 0.3rem 0.5rem; border-radius: 0.3rem; background: rgba(224,87,74,0.1); }
+.after { padding: 0.3rem 0.5rem; border-radius: 0.3rem; background: rgba(91,191,106,0.12); }
+.card-src { font-size: 0.8rem; opacity: 0.65; margin: 0.25rem 0 0; }
+.empty { opacity: 0.7; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.action-btn { font-size: 0.8rem; padding: 0.3rem 0.7rem; border: 1px solid var(--vscode-button-border, rgba(127,127,127,0.4)); border-radius: 0.3rem; background: var(--vscode-button-background, rgba(127,127,127,0.18)); color: var(--vscode-button-foreground, inherit); cursor: pointer; }
+.action-btn:hover { background: var(--vscode-button-hoverBackground, rgba(127,127,127,0.32)); }
+.empty-state { padding: 1rem 0.25rem; }
+.empty-state p { opacity: 0.85; }
+.empty-state .hint { font-size: 0.8rem; opacity: 0.6; margin-top: 1rem; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="grade grade-B+">B+</div>
+  <div class="topbar-meta">
+    <div class="section-name">Introduction</div>
+    <div class="delta"><span>was B → now B+</span> · <span>clarity 6 ↑ 7</span> · <span>flow 5 ↑ 6</span></div>
+  </div>
+</header>
+<div class="actions">
+  <button id="coach-btn" class="action-btn">Coach selection</button>
+  <button id="coach-section-btn" class="action-btn">Coach section…</button>
+</div>
+<div class="meta-note">Demo render — fixture report, not a live analysis.</div>
+<div class="controls"><label for="audience">Audience</label><select id="audience"><option value="" selected>Inferred (let Limpid decide)</option><option value="NeurIPS / ICML reviewer">NeurIPS / ICML reviewer</option><option value="ML peer">ML peer</option><option value="ML newcomer / grad student">ML newcomer / grad student</option><option value="Cross-disciplinary scientist">Cross-disciplinary scientist</option><option value="Interested layperson">Interested layperson</option></select></div><div class="altitude"><div class="alt-head">Audience (inferred): <strong>NeurIPS / ICML reviewer</strong></div><div class="alt-verdict">Pitched about right for a reviewer, but the generic opener under-sells a sharp result.</div><ul class="signals"><li>dense methods vocabulary</li><li>an identifiability claim</li><li>no tutorial-level scaffolding</li></ul></div>
+<section class="dimensions"><h2>Dimensions</h2><div class="dim"><div class="dim-label">clarity <em>(30%)</em></div><div class="dim-bar"><div class="dim-fill" style="width:75%"></div></div><div class="dim-score">7.5</div><span class="dim-note">One passive construction; otherwise direct.</span></div><div class="dim"><div class="dim-label">precision <em>(30%)</em></div><div class="dim-bar"><div class="dim-fill" style="width:68%"></div></div><div class="dim-score">6.8</div><span class="dim-note">Some throat-clearing in the opener.</span></div><div class="dim"><div class="dim-label">flow <em>(20%)</em></div><div class="dim-bar"><div class="dim-fill" style="width:60%"></div></div><div class="dim-score">6.0</div><span class="dim-note">Buried lede costs the opening its punch.</span></div><div class="dim"><div class="dim-label">accessibility <em>(20%)</em></div><div class="dim-bar"><div class="dim-fill" style="width:82%"></div></div><div class="dim-score">8.2</div><span class="dim-note">One undefined acronym (SGD).</span></div></section>
+<section class="prose"><h2>Prose</h2><div class="prose-body"><mark class="sev-warning" title="coach.buried-lede: The paper&#39;s claim lands last; the opening spends two sentences on generic background.">A great deal of prior work has explored the topic</mark>, and <mark class="sev-suggestion" title="engine.wordiness: “a variety of methods have been proposed over the years” is filler.">a variety of methods have been proposed over the years</mark>. <mark class="sev-suggestion" title="engine.passive-voice: Passive voice hides who acted.">Experiments were performed by the authors</mark> on a standard suite. We show that a simple identifiability criterion predicts when a learned representation recovers the latent factors.</div></section>
+<section class="cards"><h2>Coach</h2><div class="card sev-warning"><div class="card-head"><span class="badge">flow</span><span class="card-title">Buried Lede</span><button class="reveal" data-finding="0" title="Reveal in editor">reveal</button></div><p class="card-msg">The paper&#39;s claim lands last; the opening spends two sentences on generic background.</p><p class="card-why"><strong>Why:</strong> A reviewer decides what your paper is about in the first sentence. Background that any reader could write tells them nothing — the identifiability result is the news, so it should lead.</p><p class="card-fix"><strong>Fix:</strong> Open on the contribution, then situate it against prior work.</p><div class="ba"><div class="before">A great deal of prior work has explored the topic… We show that a simple identifiability criterion predicts…</div><div class="after">We give a simple identifiability criterion that predicts when a representation recovers the latent factors — sharpening a question prior work left open.</div></div><p class="card-src">Strunk &amp; White, The Elements of Style — put the emphatic words at the end; lead with the point.</p></div><div class="card sev-suggestion"><div class="card-head"><span class="badge">clarity</span><span class="card-title">engine.passive-voice</span><button class="reveal" data-finding="1" title="Reveal in editor">reveal</button></div><p class="card-msg">Passive voice hides who acted.</p><p class="card-why"><strong>Why:</strong> “were performed by the authors” buries the agent and adds words. Name the actor: you ran the experiments.</p><p class="card-fix"><strong>Fix:</strong> Rewrite in the active voice.</p><div class="ba"><div class="before">Experiments were performed by the authors on a standard suite.</div><div class="after">We ran the experiments on a standard suite.</div></div><p class="card-src">Orwell, Politics and the English Language (1946) — never use the passive where you can use the active.</p></div><div class="card sev-info"><div class="card-head"><span class="badge">accessibility</span><span class="card-title">engine.undefined-acronym</span></div><p class="card-msg">Acronym “SGD” is used before it is defined.</p><p class="card-why"><strong>Why:</strong> An undefined acronym is a small cliff for any reader outside the immediate subfield — spell it out on first use.</p><p class="card-fix"><strong>Fix:</strong> Expand on first use: “stochastic gradient descent (SGD)”.</p><p class="card-src">The Economist Style Guide — define abbreviations at first appearance.</p></div><div class="card sev-suggestion"><div class="card-head"><span class="badge">precision</span><span class="card-title">engine.wordiness</span><button class="reveal" data-finding="3" title="Reveal in editor">reveal</button></div><p class="card-msg">“a variety of methods have been proposed over the years” is filler.</p><p class="card-why"><strong>Why:</strong> It states nothing a reader did not assume. Cut the throat-clearing and name the methods that matter.</p><p class="card-fix"><strong>Fix:</strong> Replace with the specific prior approaches you build on.</p><p class="card-src">Strunk &amp; White — omit needless words.</p></div></section>
+<script nonce="demo">
+const api = typeof acquireVsCodeApi !== "undefined" ? acquireVsCodeApi() : null;
+function post(m) { if (api) api.postMessage(m); }
+const sel = document.getElementById("audience");
+if (sel) sel.addEventListener("change", function () { post({ type: "setAudience", audience: sel.value }); });
+const coachBtn = document.getElementById("coach-btn");
+if (coachBtn) coachBtn.addEventListener("click", function () { post({ type: "coach" }); });
+const sectionBtn = document.getElementById("coach-section-btn");
+if (sectionBtn) sectionBtn.addEventListener("click", function () { post({ type: "coachSection" }); });
+document.querySelectorAll("[data-finding]").forEach(function (el) {
+  el.addEventListener("click", function () { post({ type: "reveal", finding: Number(el.getAttribute("data-finding")) }); });
+});
+</script>
+</body>
+</html>

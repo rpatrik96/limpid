@@ -1,0 +1,8 @@
+dist/
+node_modules/
+*.cjs
+*.map
+*.vsix
+package-lock.json
+CHANGELOG.md
+media/

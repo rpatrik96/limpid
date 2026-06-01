@@ -29,7 +29,15 @@ describe("parseUserRules", () => {
   it("collects errors and skips invalid rules", () => {
     const r = parseUserRules({
       rules: [
-        { id: "bad", name: "x", category: "clarity", source: "s", method: "nope", severity: "warning", rationale: "r" },
+        {
+          id: "bad",
+          name: "x",
+          category: "clarity",
+          source: "s",
+          method: "nope",
+          severity: "warning",
+          rationale: "r",
+        },
       ],
     });
     expect(r.rules).toHaveLength(0);
@@ -55,8 +63,24 @@ describe("mergeRubric", () => {
     const existingId = defaultRubric.rules[0]!.id;
     const merged: RubricConfig = mergeRubric(defaultRubric, {
       rules: [
-        { id: existingId, name: "Overridden", category: "clarity", source: "u", method: "deterministic", severity: "info", rationale: "r" },
-        { id: "brand.new", name: "New", category: "clarity", source: "u", method: "deterministic", severity: "warning", rationale: "r" },
+        {
+          id: existingId,
+          name: "Overridden",
+          category: "clarity",
+          source: "u",
+          method: "deterministic",
+          severity: "info",
+          rationale: "r",
+        },
+        {
+          id: "brand.new",
+          name: "New",
+          category: "clarity",
+          source: "u",
+          method: "deterministic",
+          severity: "warning",
+          rationale: "r",
+        },
       ],
     });
     expect(merged.rules.length).toBe(baseCount + 1);

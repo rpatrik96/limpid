@@ -47,7 +47,7 @@ apps/
 ## Voice guardrail (important)
 
 The first user is an ML researcher whose endorsed style **keeps** em-dash interpolations, colon-payoffs,
-and long clause-stacking *that resolves cleanly*. Do NOT hard-penalize these. The operative test for an
+and long clause-stacking _that resolves cleanly_. Do NOT hard-penalize these. The operative test for an
 over-long sentence is the Economist's "must it be read twice?", not raw length. Hedging **scope**
 ("sufficient but not necessary") is a virtue; hedging **conviction** ("arguably", "it could be argued")
 is a fault. The `rubric` encodes this as `VoiceGuard`s; the `coach` must honor them.

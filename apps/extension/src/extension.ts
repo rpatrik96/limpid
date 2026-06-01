@@ -101,7 +101,9 @@ async function coachSectionCommand(): Promise<void> {
   const doc = editor.document;
   const sections = findSourceSections(doc.getText());
   if (sections.length === 0) {
-    void vscode.window.showInformationMessage("Limpid: no \\section/\\subsection found in this file.");
+    void vscode.window.showInformationMessage(
+      "Limpid: no \\section/\\subsection found in this file.",
+    );
     return;
   }
 
@@ -116,13 +118,18 @@ async function coachSectionCommand(): Promise<void> {
   );
   if (!pick) return;
 
-  await coachAndShow(doc, { kind: "section", title: pick.title, index: pick.index }, { reveal: true });
+  await coachAndShow(
+    doc,
+    { kind: "section", title: pick.title, index: pick.index },
+    { reveal: true },
+  );
 }
 
 /** Re-run the active session's scope when its document is saved (opt-out via config). */
 async function onSave(doc: vscode.TextDocument): Promise<void> {
   if (!session || doc.uri.toString() !== session.docUri.toString()) return;
-  const enabled = vscode.workspace.getConfiguration(CONFIG_SECTION).get<boolean>("reanalyzeOnSave") ?? true;
+  const enabled =
+    vscode.workspace.getConfiguration(CONFIG_SECTION).get<boolean>("reanalyzeOnSave") ?? true;
   if (!enabled) return;
   await coachAndShow(doc, session.scope, { reveal: false });
 }
@@ -160,7 +167,8 @@ async function coachAndShow(doc: vscode.TextDocument, scope: Scope, opts: ShowOp
     return;
   }
 
-  const audience = session?.docUri.toString() === doc.uri.toString() ? session.audience : configString("audience");
+  const audience =
+    session?.docUri.toString() === doc.uri.toString() ? session.audience : configString("audience");
   const previous = lastReportByDoc.get(doc.uri.toString());
 
   let report = await runReview(text, doc.fileName, audience, previous);
@@ -284,7 +292,11 @@ class CoachViewProvider implements vscode.WebviewViewProvider {
       null,
       this.context.subscriptions,
     );
-    view.webview.onDidReceiveMessage((m) => void this.onMessage(m), undefined, this.context.subscriptions);
+    view.webview.onDidReceiveMessage(
+      (m) => void this.onMessage(m),
+      undefined,
+      this.context.subscriptions,
+    );
     this.render();
   }
 

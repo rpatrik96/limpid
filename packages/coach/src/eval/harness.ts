@@ -39,12 +39,17 @@ export function evaluateExpectations(report: CoachReport, expect: EvalExpectatio
   if (expect.expectPattern !== undefined) {
     const needle = expect.expectPattern.toLowerCase();
     const ok = report.findings.some((f) => (f.patternName ?? "").toLowerCase().includes(needle));
-    checks.push({ name: `pattern~"${expect.expectPattern}"`, ok, detail: ok ? "found" : "missing" });
+    checks.push({
+      name: `pattern~"${expect.expectPattern}"`,
+      ok,
+      detail: ok ? "found" : "missing",
+    });
   }
 
   if (expect.altitudeMentions !== undefined) {
     const needle = expect.altitudeMentions.toLowerCase();
-    const hay = `${report.altitude?.verdict ?? ""} ${report.altitude?.assumedAudience ?? ""}`.toLowerCase();
+    const hay =
+      `${report.altitude?.verdict ?? ""} ${report.altitude?.assumedAudience ?? ""}`.toLowerCase();
     checks.push({
       name: `altitude~"${expect.altitudeMentions}"`,
       ok: hay.includes(needle),
@@ -54,7 +59,11 @@ export function evaluateExpectations(report: CoachReport, expect: EvalExpectatio
 
   if (expect.minLlmFindings !== undefined) {
     const n = report.findings.filter((f) => f.method === "llm").length;
-    checks.push({ name: `llmFindings>=${expect.minLlmFindings}`, ok: n >= expect.minLlmFindings, detail: String(n) });
+    checks.push({
+      name: `llmFindings>=${expect.minLlmFindings}`,
+      ok: n >= expect.minLlmFindings,
+      detail: String(n),
+    });
   }
 
   if (expect.gradeIn !== undefined) {
@@ -98,7 +107,12 @@ export async function runEval(
     results.push({ id: c.id, passed: checks.every((k) => k.ok), grade: report.grade, checks });
   }
   const passed = results.filter((r) => r.passed).length;
-  return { results, passed, total: results.length, passRate: results.length ? passed / results.length : 0 };
+  return {
+    results,
+    passed,
+    total: results.length,
+    passRate: results.length ? passed / results.length : 0,
+  };
 }
 
 /** One line per case, plus a summary — for console output during `npm run eval`. */

@@ -19,13 +19,7 @@
  * messages back to the host (`setAudience`, `reveal`); the script is inert when
  * rendered outside a webview (e.g. in tests or a future web app).
  */
-import type {
-  CoachReport,
-  DimensionScore,
-  Finding,
-  Severity,
-  Span,
-} from "@coach/contract";
+import type { CoachReport, DimensionScore, Finding, Severity, Span } from "@coach/contract";
 
 /** A finding paired with the dominant span we highlight it on. */
 interface HighlightMark {
@@ -162,7 +156,9 @@ function renderDelta(report: CoachReport): string {
   if (!delta) return "";
   const bits: string[] = [];
   if (delta.previousGrade) {
-    bits.push(`<span>was ${escapeHtml(delta.previousGrade)} → now ${escapeHtml(report.grade)}</span>`);
+    bits.push(
+      `<span>was ${escapeHtml(delta.previousGrade)} → now ${escapeHtml(report.grade)}</span>`,
+    );
   }
   if (delta.changed) {
     for (const [key, change] of Object.entries(delta.changed)) {

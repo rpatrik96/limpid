@@ -7,12 +7,7 @@
  * Swan, Smart Brevity, the rubric pattern). Spans are clamped to the analyzed
  * text length so the panel never highlights out of bounds.
  */
-import type {
-  DiagnosisPattern,
-  DimensionKey,
-  Finding,
-  Severity,
-} from "@coach/contract";
+import type { DiagnosisPattern, DimensionKey, Finding, Severity } from "@coach/contract";
 
 import {
   coerceSeverity,
@@ -55,11 +50,7 @@ const ARGUMENT_FLOW: LensSpec = {
   why: "Readers use the first sentence as the frame for the paragraph; a buried lede or unsupported claim forces a re-read and erodes trust.",
 };
 
-function lensFindingToFinding(
-  lf: LensFinding,
-  spec: LensSpec,
-  textLength: number,
-): Finding {
+function lensFindingToFinding(lf: LensFinding, spec: LensSpec, textLength: number): Finding {
   const finding: Finding = {
     ruleId: spec.ruleId,
     category: spec.category,

@@ -3,14 +3,7 @@ import type { DimensionKey, SectionKind } from "@coach/contract";
 
 import { defaultRubric } from "./index.js";
 
-const {
-  dimensions,
-  thresholds,
-  rules,
-  patterns,
-  voiceGuards,
-  gradeBands,
-} = defaultRubric;
+const { dimensions, thresholds, rules, patterns, voiceGuards, gradeBands } = defaultRubric;
 
 // Every member of contract's SectionKind union, listed exhaustively so the test
 // breaks loudly if the contract grows a new section kind.
@@ -26,12 +19,7 @@ const ALL_SECTION_KINDS: SectionKind[] = [
   "unknown",
 ];
 
-const ALL_DIMENSIONS: DimensionKey[] = [
-  "accessibility",
-  "clarity",
-  "flow",
-  "precision",
-];
+const ALL_DIMENSIONS: DimensionKey[] = ["accessibility", "clarity", "flow", "precision"];
 
 describe("dimensions", () => {
   it("weights sum to 1", () => {
@@ -341,7 +329,11 @@ describe("false-positive tails (spec'd in AGENTS.md)", () => {
   it("'optimization'/'distribution' as terms of art are protected from the nominalization rule", () => {
     const nom = rules.find((r) => r.id === "writersdiet.nominalizations");
     expect(nom).toBeDefined();
-    const guard = voiceGuards.find((g) => g.suppresses.includes("writersdiet.nominalizations") && g.id === "guard.terms-of-art-are-not-zombies");
+    const guard = voiceGuards.find(
+      (g) =>
+        g.suppresses.includes("writersdiet.nominalizations") &&
+        g.id === "guard.terms-of-art-are-not-zombies",
+    );
     expect(guard).toBeDefined();
     // The rule's own rationale acknowledges the exemption.
     expect(nom!.rationale.toLowerCase()).toContain("terms of art");

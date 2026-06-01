@@ -87,9 +87,8 @@ export const patterns: DiagnosisPattern[] = [
     id: "hedge-stacking",
     name: "Hedge Stacking",
     definition:
-      "Multiple hedges piled onto one claim: \"might possibly suggest that it could potentially indicate.\"",
-    howToSpot:
-      "Count qualifiers per sentence. More than one hedge per claim signals the problem.",
+      'Multiple hedges piled onto one claim: "might possibly suggest that it could potentially indicate."',
+    howToSpot: "Count qualifiers per sentence. More than one hedge per claim signals the problem.",
     whyItFails:
       "Each hedge dilutes confidence. Three hedges on one claim tell the reader you don't believe it either.",
     example: {
@@ -120,9 +119,9 @@ export const patterns: DiagnosisPattern[] = [
     id: "abstraction-fog",
     name: "Abstraction Fog",
     definition:
-      "Abstract nouns doing the work of concrete verbs: \"the optimization of the parameters\" instead of \"we optimize the parameters.\"",
+      'Abstract nouns doing the work of concrete verbs: "the optimization of the parameters" instead of "we optimize the parameters."',
     howToSpot:
-      "Look for -tion and -ment nouns that could be verbs, and count prepositional chains (\"of the\", \"for the\", \"in the\").",
+      'Look for -tion and -ment nouns that could be verbs, and count prepositional chains ("of the", "for the", "in the").',
     whyItFails:
       "Abstract nouns hide the actor and the action, so the reader has to reconstruct who did what.",
     example: {
@@ -136,9 +135,9 @@ export const patterns: DiagnosisPattern[] = [
     id: "zombie-sentence",
     name: "Zombie Sentence",
     definition:
-      "Passive voice hiding the actor when the actor matters: \"It was found that…\", \"The model was trained…\", \"Experiments were conducted…\".",
+      'Passive voice hiding the actor when the actor matters: "It was found that…", "The model was trained…", "Experiments were conducted…".',
     howToSpot:
-      "Ask \"by whom?\" If the answer matters and is missing, it's a zombie sentence. (Passive is fine when the actor genuinely doesn't matter: \"The dataset was collected in 2019.\")",
+      'Ask "by whom?" If the answer matters and is missing, it\'s a zombie sentence. (Passive is fine when the actor genuinely doesn\'t matter: "The dataset was collected in 2019.")',
     whyItFails:
       "Readers need agents to build a mental model of what happened. Agentless sentences float without anchoring.",
     example: {
@@ -151,9 +150,8 @@ export const patterns: DiagnosisPattern[] = [
     id: "echo-chamber",
     name: "Echo Chamber",
     definition:
-      "The same word or phrase repeated three or more times in close proximity: \"the model uses the model architecture to model the distribution.\"",
-    howToSpot:
-      "Read aloud. Repeated words create an audible stutter.",
+      'The same word or phrase repeated three or more times in close proximity: "the model uses the model architecture to model the distribution."',
+    howToSpot: "Read aloud. Repeated words create an audible stutter.",
     whyItFails:
       "Repetition signals emphasis. Unintentional repetition creates false emphasis and makes prose feel unpolished.",
     example: {
@@ -166,14 +164,12 @@ export const patterns: DiagnosisPattern[] = [
     id: "throat-clearing",
     name: "Throat Clearing",
     definition:
-      "Opening with filler before saying the actual thing: \"It is important to note that…\", \"It should be mentioned that…\", \"As we all know…\".",
-    howToSpot:
-      "Delete the opening phrase. If the sentence still works, it was throat clearing.",
+      'Opening with filler before saying the actual thing: "It is important to note that…", "It should be mentioned that…", "As we all know…".',
+    howToSpot: "Delete the opening phrase. If the sentence still works, it was throat clearing.",
     whyItFails:
       "The reader allocates attention to the opening. Wasting it on filler means less attention for the actual content.",
     example: {
-      before:
-        "It is important to note that our estimator is unbiased under mild assumptions.",
+      before: "It is important to note that our estimator is unbiased under mild assumptions.",
       after: "Our estimator is unbiased under mild assumptions.",
     },
     detectableBy: "hybrid",
@@ -182,14 +178,13 @@ export const patterns: DiagnosisPattern[] = [
     id: "scale-mismatch",
     name: "Scale Mismatch",
     definition:
-      "A paragraph-level claim supported by sentence-level evidence, or vice versa: \"Deep learning has transformed computer vision\" backed by \"our model gets 92% on CIFAR-10.\"",
+      'A paragraph-level claim supported by sentence-level evidence, or vice versa: "Deep learning has transformed computer vision" backed by "our model gets 92% on CIFAR-10."',
     howToSpot:
       "Check whether the scope of the claim matches the scope of the evidence. Grand claims need broad evidence; narrow evidence supports narrow claims.",
     whyItFails:
       "The reader notices the gap between claim and evidence, even subconsciously, and it erodes trust.",
     example: {
-      before:
-        "Deep learning has transformed computer vision: our model reaches 92% on CIFAR-10.",
+      before: "Deep learning has transformed computer vision: our model reaches 92% on CIFAR-10.",
       after:
         "Our model reaches 92% on CIFAR-10, improving 3 points over the prior best on this benchmark.",
     },
@@ -202,8 +197,7 @@ export const patterns: DiagnosisPattern[] = [
       "Technical density spikes without warning, and the reader falls off a comprehension cliff because three undefined terms appeared in one sentence.",
     howToSpot:
       "Read as someone one expertise level below the target audience. If a sentence needs three mental lookups, it's a jargon cliff.",
-    whyItFails:
-      "Each unknown term consumes working memory. Three at once exhausts it.",
+    whyItFails: "Each unknown term consumes working memory. Three at once exhausts it.",
     example: {
       before:
         "We anneal the InfoNCE temperature on the equivariant latent under a VICReg covariance penalty.",

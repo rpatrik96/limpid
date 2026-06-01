@@ -182,7 +182,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "Long Latinate words signal effort, not precision. Prefer the short Saxon word when it means the same thing — \"use\" over \"utilize\", \"about\" over \"approximately\" when the number is loose.",
+      'Long Latinate words signal effort, not precision. Prefer the short Saxon word when it means the same thing — "use" over "utilize", "about" over "approximately" when the number is loose.',
     detector: {
       kind: "regex",
       pattern:
@@ -243,11 +243,10 @@ export const rules: Rule[] = [
     method: "llm",
     severity: "suggestion",
     rationale:
-      "Foreign phrases, scientific words, and jargon should earn their place. Keep a term of art when it is precise (\"stochastic gradient descent\"); cut it when an everyday word means the same. The Jargon Cliff pattern catches the density spike.",
+      'Foreign phrases, scientific words, and jargon should earn their place. Keep a term of art when it is precise ("stochastic gradient descent"); cut it when an everyday word means the same. The Jargon Cliff pattern catches the density spike.',
     examples: [
       {
-        before:
-          "We leverage a bespoke heuristic to ameliorate the convergence pathology a priori.",
+        before: "We leverage a bespoke heuristic to ameliorate the convergence pathology a priori.",
         after: "We add a simple rule that fixes the convergence problem up front.",
       },
     ],
@@ -265,8 +264,7 @@ export const rules: Rule[] = [
       {
         before:
           "(Mechanically de-passivized:) We collected the dataset in 2019, and we trained models, and we evaluated them.",
-        after:
-          "The dataset was collected in 2019. We then trained and evaluated the models.",
+        after: "The dataset was collected in 2019. We then trained and evaluated the models.",
       },
     ],
   },
@@ -280,7 +278,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "warning",
     rationale:
-      "Vigorous writing is concise: every word should tell. This targets empty phrases — \"in order to\", \"it is important to note that\" — not the connectives that carry an argument. Conciseness means every word works, not that every sentence is short.",
+      'Vigorous writing is concise: every word should tell. This targets empty phrases — "in order to", "it is important to note that" — not the connectives that carry an argument. Conciseness means every word works, not that every sentence is short.',
     detector: { kind: "phrases", phrases: FILLER_PHRASES },
     examples: [
       {
@@ -314,11 +312,12 @@ export const rules: Rule[] = [
     id: "strunk.expletive-openers",
     name: "Avoid expletive openers (there is / there are / it is)",
     category: "clarity",
-    source: "Strunk & White, The Elements of Style, Rule 14 corollary (see sources/strunk-white.md)",
+    source:
+      "Strunk & White, The Elements of Style, Rule 14 corollary (see sources/strunk-white.md)",
     method: "heuristic",
     severity: "warning",
     rationale:
-      "An expletive opener (\"there is\", \"it is\") postpones the real subject behind a dummy placeholder, draining the sentence of its actor and adding words. Recast with the true subject first.",
+      'An expletive opener ("there is", "it is") postpones the real subject behind a dummy placeholder, draining the sentence of its actor and adding words. Recast with the true subject first.',
     detector: { kind: "opener", prefixes: WEAK_OPENERS },
     examples: [
       {
@@ -335,7 +334,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "warning",
     rationale:
-      "\"the fact that\" is a debilitating expression: it should be revised out of every sentence in which it occurs. It nominalizes a verb and delays the point.",
+      '"the fact that" is a debilitating expression: it should be revised out of every sentence in which it occurs. It nominalizes a verb and delays the point.',
     detector: {
       kind: "regex",
       pattern: "\\bthe\\s+fact\\s+that\\b",
@@ -398,10 +397,11 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "\"Currently\", \"now\", \"at present\", \"at this point in time\" rarely add information in scientific prose — the present tense already says it. Cut them.",
+      '"Currently", "now", "at present", "at this point in time" rarely add information in scientific prose — the present tense already says it. Cut them.',
     detector: {
       kind: "regex",
-      pattern: "\\b(?:currently|presently|at\\s+present|at\\s+this\\s+(?:point|moment)\\s+in\\s+time|nowadays|at\\s+this\\s+time)\\b",
+      pattern:
+        "\\b(?:currently|presently|at\\s+present|at\\s+this\\s+(?:point|moment)\\s+in\\s+time|nowadays|at\\s+this\\s+time)\\b",
       flags: "gi",
     },
     examples: [
@@ -419,7 +419,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "\"So-called\" either casts doubt (a sneer that has no place in technical prose) or stalls before defining a term. Name the term and, if it needs justifying, justify it.",
+      '"So-called" either casts doubt (a sneer that has no place in technical prose) or stalls before defining a term. Name the term and, if it needs justifying, justify it.',
     detector: {
       kind: "regex",
       pattern: "\\bso[-\\s]called\\b",
@@ -442,7 +442,7 @@ export const rules: Rule[] = [
     method: "heuristic",
     severity: "suggestion",
     rationale:
-      "A sentence built on \"is/are/was/were\" leans on the weakest verb in English. A concrete verb carries the action and cuts words: \"performance improves\" beats \"there is an improvement in performance\".",
+      'A sentence built on "is/are/was/were" leans on the weakest verb in English. A concrete verb carries the action and cuts words: "performance improves" beats "there is an improvement in performance".',
     detector: {
       kind: "regex",
       pattern: "\\b(?:is|are|was|were|be|been|being)\\b",
@@ -463,7 +463,7 @@ export const rules: Rule[] = [
     method: "heuristic",
     severity: "suggestion",
     rationale:
-      "Zombie nouns ending in -tion, -ment, -ity, -ance bury a verb and an actor. \"The optimization of the loss\" hides \"optimize\". Find the hidden verb and let it act. (Terms of art like \"distribution\" or \"optimization\" naming a field are exempt — the Abstraction Fog pattern judges in context.)",
+      'Zombie nouns ending in -tion, -ment, -ity, -ance bury a verb and an actor. "The optimization of the loss" hides "optimize". Find the hidden verb and let it act. (Terms of art like "distribution" or "optimization" naming a field are exempt — the Abstraction Fog pattern judges in context.)',
     detector: {
       kind: "regex",
       pattern: "\\b\\w{4,}(?:tion|ment|ity|ance|ence|ness)\\b",
@@ -484,10 +484,11 @@ export const rules: Rule[] = [
     method: "heuristic",
     severity: "suggestion",
     rationale:
-      "Strings of prepositional phrases (\"the reduction of the variance of the estimator of the gradient\") stack modifiers the reader must unwind. Reorder so the head noun comes first or recast with a verb.",
+      'Strings of prepositional phrases ("the reduction of the variance of the estimator of the gradient") stack modifiers the reader must unwind. Reorder so the head noun comes first or recast with a verb.',
     detector: {
       kind: "regex",
-      pattern: "\\b(?:of|for|in|on|to|with|by)\\s+the\\b(?:\\s+\\w+\\s+(?:of|for|in|on|to|with|by)\\s+the\\b)",
+      pattern:
+        "\\b(?:of|for|in|on|to|with|by)\\s+the\\b(?:\\s+\\w+\\s+(?:of|for|in|on|to|with|by)\\s+the\\b)",
       flags: "gi",
     },
     examples: [
@@ -505,10 +506,11 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "Empty intensifiers (\"very\", \"highly\", \"extremely\") and -ly adverbs pad a claim without adding information. A precise noun or verb makes them unnecessary: \"surges\" beats \"increases very significantly\".",
+      'Empty intensifiers ("very", "highly", "extremely") and -ly adverbs pad a claim without adding information. A precise noun or verb makes them unnecessary: "surges" beats "increases very significantly".',
     detector: {
       kind: "regex",
-      pattern: "\\b(?:very|highly|extremely|incredibly|remarkably|substantially|significantly|considerably)\\b",
+      pattern:
+        "\\b(?:very|highly|extremely|incredibly|remarkably|substantially|significantly|considerably)\\b",
       flags: "gi",
     },
     examples: [
@@ -528,7 +530,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "One hedge per claim is honest scope-marking. Stacked hedges (\"might possibly suggest could\") tell the reader you don't believe the claim either. Hedge scope, not conviction: \"sufficient but not necessary\" is a virtue; \"arguably\" is a crutch.",
+      'One hedge per claim is honest scope-marking. Stacked hedges ("might possibly suggest could") tell the reader you don\'t believe the claim either. Hedge scope, not conviction: "sufficient but not necessary" is a virtue; "arguably" is a crutch.',
     detector: { kind: "words", words: HEDGE_WORDS },
     examples: [
       {
@@ -545,7 +547,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "Multi-word hedges (\"it could be argued that\", \"there is reason to believe\") hide the author and dilute the claim. State it and own it, or cut it. Conviction-hedging is the fault; scope-hedging is fine.",
+      'Multi-word hedges ("it could be argued that", "there is reason to believe") hide the author and dilute the claim. State it and own it, or cut it. Conviction-hedging is the fault; scope-hedging is fine.',
     detector: { kind: "phrases", phrases: HEDGE_PHRASES },
     examples: [
       {
@@ -562,7 +564,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "Boosters assert importance the prose should demonstrate. \"Clearly\" and \"obviously\" often flag the step the author skipped — if it were clear, the word would be unnecessary. Show the reasoning instead.",
+      'Boosters assert importance the prose should demonstrate. "Clearly" and "obviously" often flag the step the author skipped — if it were clear, the word would be unnecessary. Show the reasoning instead.',
     detector: { kind: "words", words: BOOSTER_WORDS },
     examples: [
       {
@@ -579,7 +581,7 @@ export const rules: Rule[] = [
     method: "hybrid",
     severity: "suggestion",
     rationale:
-      "Marketing adjectives ask the reader to take a verdict on faith. Reviewers flag \"novel\" and \"powerful\" as tells. Let the result earn the adjective — report the number and drop the boast.",
+      'Marketing adjectives ask the reader to take a verdict on faith. Reviewers flag "novel" and "powerful" as tells. Let the result earn the adjective — report the number and drop the boast.',
     detector: { kind: "words", words: HYPE_WORDS },
     examples: [
       {
@@ -636,10 +638,8 @@ export const rules: Rule[] = [
       "The end of a sentence is its stress position — the place the reader naturally emphasizes. Put the new, important idea there; do not trail off into old or trivial material. Pairs with the Buried Lede pattern at the sentence scale.",
     examples: [
       {
-        before:
-          "A 4-point gain over the prior best is what our method achieves, in most settings.",
-        after:
-          "In most settings, our method beats the prior best by 4 points.",
+        before: "A 4-point gain over the prior best is what our method achieves, in most settings.",
+        after: "In most settings, our method beats the prior best by 4 points.",
       },
     ],
   },
@@ -656,8 +656,7 @@ export const rules: Rule[] = [
       {
         before:
           "We optimize the loss with Adam. Variance reduction is what the resulting estimator provides.",
-        after:
-          "We optimize the loss with Adam. The resulting estimator reduces variance.",
+        after: "We optimize the loss with Adam. The resulting estimator reduces variance.",
       },
     ],
   },

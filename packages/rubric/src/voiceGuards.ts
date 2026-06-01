@@ -18,7 +18,7 @@ export const voiceGuards: VoiceGuard[] = [
   {
     id: "guard.clause-stacking-resolves",
     description:
-      "Do NOT penalize a long, clause-stacked sentence merely for length. The operative test is the Economist's \"must it be read twice?\": a sentence that resolves cleanly on the first pass is fine, however long. Suppress raw length-based flags (be-verb, preposition, subject-verb-distance, active-voice) and the read-twice warning when the sentence parses on first read; keep them only when it genuinely forces a re-read.",
+      'Do NOT penalize a long, clause-stacked sentence merely for length. The operative test is the Economist\'s "must it be read twice?": a sentence that resolves cleanly on the first pass is fine, however long. Suppress raw length-based flags (be-verb, preposition, subject-verb-distance, active-voice) and the read-twice warning when the sentence parses on first read; keep them only when it genuinely forces a re-read.',
     suppresses: [
       "economist.read-twice",
       "writersdiet.be-verbs",
@@ -30,23 +30,19 @@ export const voiceGuards: VoiceGuard[] = [
   {
     id: "guard.scope-hedging-is-a-virtue",
     description:
-      "Allow scope-hedging — bounding a claim's reach (\"sufficient but not necessary\", \"under mild assumptions\", \"on the benchmarks we tested\") — while still flagging conviction-hedging (\"arguably\", \"it could be argued\", \"we believe that\") that signals the author doesn't trust the claim. Down-weight hedge findings when the hedge marks scope; keep them when it marks doubt.",
+      'Allow scope-hedging — bounding a claim\'s reach ("sufficient but not necessary", "under mild assumptions", "on the benchmarks we tested") — while still flagging conviction-hedging ("arguably", "it could be argued", "we believe that") that signals the author doesn\'t trust the claim. Down-weight hedge findings when the hedge marks scope; keep them when it marks doubt.',
     suppresses: ["voice.hedges", "voice.hedge-phrases"],
   },
   {
     id: "guard.em-dash-and-colon-payoff",
     description:
       "Keep the author's em-dash interpolations (a definition or sharpened point set off mid-sentence) and colon-then-payoff constructions. These are signature moves, not errors. Suppress expletive-opener / be-verb / nominalization flags that fire on the well-formed setup of a colon-payoff or on the interpolated clause of an em-dash pair.",
-    suppresses: [
-      "strunk.expletive-openers",
-      "writersdiet.be-verbs",
-      "writersdiet.nominalizations",
-    ],
+    suppresses: ["strunk.expletive-openers", "writersdiet.be-verbs", "writersdiet.nominalizations"],
   },
   {
     id: "guard.terms-of-art-are-not-zombies",
     description:
-      "Field terms of art that happen to end in -tion/-ment/-ity (\"distribution\", \"optimization\", \"regularization\", \"representation\") are precise vocabulary, not nominalization bloat. Down-weight the nominalization and abstraction flags on established terms of art; keep them on noun phrases that hide a verb the author could use directly (\"the utilization of\").",
+      'Field terms of art that happen to end in -tion/-ment/-ity ("distribution", "optimization", "regularization", "representation") are precise vocabulary, not nominalization bloat. Down-weight the nominalization and abstraction flags on established terms of art; keep them on noun phrases that hide a verb the author could use directly ("the utilization of").',
     suppresses: ["writersdiet.nominalizations"],
   },
 ];

@@ -20,11 +20,15 @@ describe("buildChatBody", () => {
   });
 
   it("sets json_object response_format when json is requested", () => {
-    expect(buildChatBody([], "m", { json: true })["response_format"]).toEqual({ type: "json_object" });
+    expect(buildChatBody([], "m", { json: true })["response_format"]).toEqual({
+      type: "json_object",
+    });
   });
 
   it("suppresses response_format when jsonMode is false", () => {
-    expect(buildChatBody([], "m", { json: true, jsonMode: false })["response_format"]).toBeUndefined();
+    expect(
+      buildChatBody([], "m", { json: true, jsonMode: false })["response_format"],
+    ).toBeUndefined();
   });
 });
 
@@ -86,7 +90,12 @@ describe("OpenAICompatibleModel.complete", () => {
 
   it("throws with status + detail on a non-ok response", async () => {
     const fetchFn: FetchLike = async () => fakeResponse({ error: "bad" }, false, 401);
-    const model = new OpenAICompatibleModel({ baseURL: "https://x/v1", apiKey: "k", model: "m", fetchFn });
+    const model = new OpenAICompatibleModel({
+      baseURL: "https://x/v1",
+      apiKey: "k",
+      model: "m",
+      fetchFn,
+    });
     await expect(model.complete({ prompt: "p" })).rejects.toThrow(/401/);
   });
 });

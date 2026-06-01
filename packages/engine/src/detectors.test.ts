@@ -54,10 +54,7 @@ describe("findAdverbs — false-positive tails", () => {
 
   it("flags genuine -ly adverbs", () => {
     const hits = findAdverbs("The model quickly and carefully converged.");
-    expect(hits.map((h) => h.text.toLowerCase())).toEqual([
-      "quickly",
-      "carefully",
-    ]);
+    expect(hits.map((h) => h.text.toLowerCase())).toEqual(["quickly", "carefully"]);
   });
 
   it("returns spans that index back into the text", () => {
@@ -71,10 +68,7 @@ describe("findAdverbs — false-positive tails", () => {
 describe("findWords / findPhrases", () => {
   it("matches filler words on word boundaries, case-insensitively", () => {
     const hits = findWords("This is Just a Very thing.", FILLER_WORDS);
-    expect(hits.map((h) => h.text.toLowerCase()).sort()).toEqual([
-      "just",
-      "very",
-    ]);
+    expect(hits.map((h) => h.text.toLowerCase()).sort()).toEqual(["just", "very"]);
   });
 
   it("does not match a filler word as a substring of another word", () => {
@@ -85,10 +79,7 @@ describe("findWords / findPhrases", () => {
 
   it("matches hedge words", () => {
     const hits = findWords("This might possibly work.", HEDGE_WORDS);
-    expect(hits.map((h) => h.text.toLowerCase()).sort()).toEqual([
-      "might",
-      "possibly",
-    ]);
+    expect(hits.map((h) => h.text.toLowerCase()).sort()).toEqual(["might", "possibly"]);
   });
 
   it("matches multi-word phrases and prefers the longest", () => {
@@ -100,9 +91,7 @@ describe("findWords / findPhrases", () => {
 
 describe("startsWithWeak", () => {
   it("flags expletive 'There is' openers", () => {
-    expect(
-      startsWithWeak("There is a gap in the literature.", WEAK_OPENERS),
-    ).toBe("there is");
+    expect(startsWithWeak("There is a gap in the literature.", WEAK_OPENERS)).toBe("there is");
   });
 
   it("flags 'It is' openers", () => {
@@ -110,16 +99,13 @@ describe("startsWithWeak", () => {
   });
 
   it("does not flag a strong subject-first opener", () => {
-    expect(
-      startsWithWeak("The method outperforms baselines.", WEAK_OPENERS),
-    ).toBeNull();
+    expect(startsWithWeak("The method outperforms baselines.", WEAK_OPENERS)).toBeNull();
   });
 });
 
 describe("findUndefinedAcronyms", () => {
   it("flags an acronym used before its definition", () => {
-    const text =
-      "We evaluate the SVM here. A Support Vector Machine (SVM) is a classifier.";
+    const text = "We evaluate the SVM here. A Support Vector Machine (SVM) is a classifier.";
     const { undefinedUses, undefinedAcronyms } = findUndefinedAcronyms(text);
     expect(undefinedAcronyms).toContain("SVM");
     expect(undefinedUses.some((u) => u.acronym === "SVM")).toBe(true);
@@ -129,8 +115,7 @@ describe("findUndefinedAcronyms", () => {
   });
 
   it("does NOT flag an acronym used only after its definition", () => {
-    const text =
-      "A Convolutional Neural Network (CNN) is used. The CNN has many layers.";
+    const text = "A Convolutional Neural Network (CNN) is used. The CNN has many layers.";
     const { undefinedUses, undefinedAcronyms } = findUndefinedAcronyms(text);
     expect(undefinedAcronyms).not.toContain("CNN");
     expect(undefinedUses.filter((u) => u.acronym === "CNN")).toHaveLength(0);

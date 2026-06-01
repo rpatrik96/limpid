@@ -1,23 +1,81 @@
 # Limpid
 
-> *Clear writing, and the reason it's clear.*
+> _Clear writing, and the reason it's clear._
+
+[![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
+[![tests](https://img.shields.io/badge/tests-226-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
 Economist, Pinker's curse-of-knowledge — not the way academics usually write, and
-it **teaches *why*** a passage fails: it names the failure pattern, explains the
+it **teaches _why_** a passage fails: it names the failure pattern, explains the
 cognitive reason, and shows a before/after. It runs locally; your drafts never
 leave your machine.
 
 It is built for LaTeX (and plain prose): point it at a `.tex` selection and it
 strips the markup, scores four dimensions, and coaches it.
 
+## Contents
+
+- [Demo](#demo)
+- [Install](#install)
+- [Where it lives](#where-it-lives)
+- [What it does](#what-it-does)
+- [Editable rules (playground)](#editable-rules-playground)
+- [Registers](#registers)
+- [CLI gate](#cli-gate)
+- [Develop](#develop)
+- [Project layout](#project-layout)
+- [Architecture](#architecture)
+- [Status](#status)
+
+## Demo
+
+![Limpid CLI](media/demo/cli-demo.gif)
+
+The deterministic CLI gate scoring a `.tex` section — grade, dimensions, and named
+failure patterns, no editor required.
+
+An in-editor screenshot of the sidebar Coach view (highlights + coaching cards)
+lives alongside it at [`media/demo/webview.png`](media/demo/webview.png).
+
+## Install
+
+Grab a packaged `.vsix` (from a release, or build one below) and install it:
+
+```bash
+code --install-extension limpid-<version>.vsix
+```
+
+**Run from source (F5).** Clone, install, build the extension, then press **F5**
+in VS Code to launch an Extension Development Host with Limpid loaded:
+
+```bash
+npm install
+npm run build -w apps/extension
+# then press F5 in VS Code
+```
+
+**Build the `.vsix` yourself:**
+
+```bash
+npm install
+npm run build -w apps/extension
+npx --yes @vscode/vsce package      # writes limpid-<version>.vsix
+code --install-extension limpid-*.vsix
+```
+
+Open a `.tex` file, select a paragraph (or none, for the whole file), and run
+**“Limpid: Coach this selection / section”** from the Command Palette.
+
 ## Where it lives
 
 Limpid adds a **Coach** view to the Activity Bar (the Limpid icon in the left
 sidebar). Trigger an analysis from there, or:
 
-- **right-click** a selection → *Limpid: Coach this selection / section*,
+- **right-click** a selection → _Limpid: Coach this selection / section_,
 - press **⌘⌥L / Ctrl+Alt+L** (coaches the selection, or the whole file if nothing
   is selected),
 - run **Limpid: Coach a section…** to pick a `\section`/`\subsection`/… and coach
@@ -33,7 +91,7 @@ Whatever you coached is remembered, so **saving the file re-runs the same scope*
 - **Highlights** the extracted prose, Hemingway-style — long sentences, passive
   voice, hedges, fillers, weak openers.
 - **Coaches** with cards: a named pattern (Buried Lede, Idea Soup, Hedge
-  Stacking…) → *why it fails* → a before/after fix → the rule it comes from.
+  Stacking…) → _why it fails_ → a before/after fix → the rule it comes from.
 - **Audience altitude:** judges whether the prose sits at the right level for its
   reader. Limpid infers the reader, and you can change it in the view to re-run.
 - **Grade + dimensions** (Accessibility / Clarity / Flow / Precision) with a
@@ -47,15 +105,15 @@ calls that need understanding — stress position, paragraph cohesion, audience
 altitude, argument flow — use a language model. Pick one with `limpid.provider`
 (default `auto`):
 
-| `limpid.provider` | What it uses | Key? |
-|---|---|---|
-| `auto` | free Copilot, then any API key you've set | — |
-| `copilot` | GitHub Copilot via the VS Code LM API — **the free tier works** | no |
-| `claude-code` | the local Claude Code CLI (`claude -p`), your subscription auth | no |
-| `ollama` | a local model via Ollama (`limpid.ollama.baseURL`) | no |
-| `anthropic` | the Anthropic API | yes |
-| `openai` / `openrouter` / `groq` / `together` / `mistral` | those APIs | yes |
-| `openai-compatible` | any OpenAI-compatible endpoint (`limpid.openaiCompatible.baseURL`) | optional |
+| `limpid.provider`                                         | What it uses                                                       | Key?     |
+| --------------------------------------------------------- | ------------------------------------------------------------------ | -------- |
+| `auto`                                                    | free Copilot, then any API key you've set                          | —        |
+| `copilot`                                                 | GitHub Copilot via the VS Code LM API — **the free tier works**    | no       |
+| `claude-code`                                             | the local Claude Code CLI (`claude -p`), your subscription auth    | no       |
+| `ollama`                                                  | a local model via Ollama (`limpid.ollama.baseURL`)                 | no       |
+| `anthropic`                                               | the Anthropic API                                                  | yes      |
+| `openai` / `openrouter` / `groq` / `together` / `mistral` | those APIs                                                         | yes      |
+| `openai-compatible`                                       | any OpenAI-compatible endpoint (`limpid.openaiCompatible.baseURL`) | optional |
 
 With no provider available it runs **deterministic-only** — still a useful report,
 just without the four LLM lenses.
@@ -68,25 +126,6 @@ remove it. The keyless paths (Copilot, Claude Code CLI, Ollama) need no key at a
 > (Free plan, no card); the first coach run asks for one-time consent. The Free
 > tier shares a small monthly request quota, so on `Blocked`/quota errors Limpid
 > degrades to a deterministic report and tells you.
-
-## Try it
-
-```bash
-npm install
-npm test                       # 192 tests across the core + extension
-npm run build -w apps/extension
-```
-
-Then either **press F5** in VS Code (Extension Development Host) or install the
-packaged build:
-
-```bash
-npx --yes @vscode/vsce package      # builds limpid-<version>.vsix
-code --install-extension limpid-*.vsix
-```
-
-Open a `.tex` file, select a paragraph (or none, for the whole file), and run
-**“Limpid: Coach this selection / section”** from the Command Palette.
 
 ## Editable rules (playground)
 
@@ -102,22 +141,60 @@ writing — `paper` (default), `blog`, `grant`, `sop` — re-weighting the four
 dimensions and shifting the readability target so a blog post isn't graded like a
 paper. `auto` picks `blog` for `.md`/`.markdown`, `paper` otherwise.
 
+## CLI gate
+
+The `limpid` CLI runs the deterministic path headless — useful as a pre-commit or
+CI gate that fails when prose regresses. Build it, then run it over a file:
+
+```bash
+npm run build -w apps/cli            # -> apps/cli/dist/cli.js
+node apps/cli/dist/cli.js path/to/draft.tex --register paper
+```
+
+It shares the same engine, rubric, and registers as the extension, so the score
+matches what you see in the editor.
+
+## Develop
+
+Day-to-day workflow lives in [CONTRIBUTING.md](CONTRIBUTING.md); the design and
+package boundaries are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (with the
+original spec in [DESIGN.md](DESIGN.md) and repo conventions in
+[AGENTS.md](AGENTS.md)).
+
+```bash
+npm install
+npm test            # 226 vitest tests across core + extension
+npm run typecheck
+npm run build       # build every workspace
+npm run eval        # golden-set harness for the LLM lenses
+```
+
+Requires **Node 22**. Other root scripts: `test:watch`, `lint` / `lint:fix`,
+`format` / `format:check`, `coverage`.
+
+## Project layout
+
+TypeScript monorepo, npm workspaces, ESM throughout. `@coach/{contract,engine,latex,rubric}`
+are pure (no `vscode`, network, or `fs`); the host concerns live in the providers
+package and the two apps.
+
+| Workspace            | Job                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/contract`  | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`) — pure                    |
+| `packages/engine`    | deterministic metrics + findings — pure                                                                          |
+| `packages/latex`     | `.tex` → extracted prose + coarse source map — pure                                                              |
+| `packages/rubric`    | the canon as data: rules, named patterns, thresholds, voice guards — pure                                        |
+| `packages/coach`     | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness                              |
+| `packages/providers` | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + CLI |
+| `apps/extension`     | the VS Code extension: command + webview Coach panel, Copilot adapter, SecretStorage keys                        |
+| `apps/cli`           | the `limpid` deterministic gate (`apps/cli/dist/cli.js`)                                                         |
+
 ## Architecture
 
-A front-end-agnostic core (so a web app can reuse it) plus one VS Code front-end:
-
-| Package | Job |
-|---|---|
-| `@coach/contract` | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`) |
-| `@coach/engine` | deterministic metrics + findings (pure) |
-| `@coach/latex` | `.tex` → extracted prose + coarse source map (pure) |
-| `@coach/rubric` | the canon as data: rules, 12 named patterns, thresholds, voice guards |
-| `@coach/coach` | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness |
-| `@coach/providers` | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + eval |
-| `apps/extension` | command + webview coach panel; Copilot adapter + the `@coach/providers` adapters; SecretStorage keys |
-
-See [DESIGN.md](DESIGN.md) for the full spec and [AGENTS.md](AGENTS.md) for repo
-conventions.
+A front-end-agnostic core (so a web app can reuse it) plus a VS Code front-end and
+a headless CLI. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the package
+boundaries and data flow, [DESIGN.md](DESIGN.md) for the full spec, and
+[AGENTS.md](AGENTS.md) for repo conventions.
 
 ## Status
 

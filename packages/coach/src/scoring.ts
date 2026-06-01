@@ -42,10 +42,7 @@ function bandPenalty(value: number, lo: number, hi: number, slope: number): numb
   return 0;
 }
 
-function thresholdFor(
-  thresholds: SectionThresholds[],
-  section: SectionKind,
-): SectionThresholds {
+function thresholdFor(thresholds: SectionThresholds[], section: SectionKind): SectionThresholds {
   const hit = thresholds.find((t) => t.section === section);
   if (hit) return hit;
   const fallback = thresholds.find((t) => t.section === "unknown");
@@ -57,10 +54,7 @@ function thresholdFor(
  * Accessibility: how reachable the prose is for the section's intended reader.
  * Penalize FK grade outside the section band and long average sentences.
  */
-export function scoreAccessibility(
-  metrics: Metrics,
-  threshold: SectionThresholds,
-): number {
+export function scoreAccessibility(metrics: Metrics, threshold: SectionThresholds): number {
   const [lo, hi] = threshold.fkGrade;
   const fk = metrics.readability.fleschKincaidGrade;
   // ~1 point per grade-level outside the acceptable band.
@@ -75,10 +69,7 @@ export function scoreAccessibility(
  * Clarity: mechanical directness. Passive fraction over the section ceiling and
  * hedge / filler / weak-opener densities each erode the score.
  */
-export function scoreClarity(
-  metrics: Metrics,
-  threshold: SectionThresholds,
-): number {
+export function scoreClarity(metrics: Metrics, threshold: SectionThresholds): number {
   // Passive over the section ceiling: each 10 points over the max ⇒ ~1 point off.
   const passiveOver = Math.max(0, metrics.passiveFraction - threshold.passiveFractionMax);
   const passivePenalty = passiveOver * 10;
@@ -89,9 +80,7 @@ export function scoreClarity(
   const sentences = metrics.sentenceStats.count || 1;
   const weakFrac = metrics.weakOpenerCount / sentences;
   const weakPenalty = weakFrac * 6;
-  return clampScore(
-    10 - passivePenalty - hedgePenalty - fillerPenalty - weakPenalty,
-  );
+  return clampScore(10 - passivePenalty - hedgePenalty - fillerPenalty - weakPenalty);
 }
 
 /**

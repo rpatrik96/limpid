@@ -1,11 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import {
-  coerceSeverity,
-  coerceSpans,
-  extractJson,
-  parseLensResult,
-} from "./lenses.js";
+import { coerceSeverity, coerceSpans, extractJson, parseLensResult } from "./lenses.js";
 import { defaultLensResult } from "./mock.js";
 
 describe("extractJson", () => {
@@ -15,7 +10,7 @@ describe("extractJson", () => {
   });
 
   test("unwraps a ```json fenced block", () => {
-    const raw = "Here you go:\n```json\n{\"a\":1}\n```\nDone.";
+    const raw = 'Here you go:\n```json\n{"a":1}\n```\nDone.';
     expect(extractJson(raw)).toBe('{"a":1}');
   });
 

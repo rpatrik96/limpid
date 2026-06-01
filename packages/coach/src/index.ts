@@ -30,7 +30,6 @@ import type {
   GradeDelta,
   LanguageModel,
   Metrics,
-  RubricConfig,
   SectionKind,
 } from "@coach/contract";
 import { CONTRACT_VERSION } from "@coach/contract";
@@ -61,12 +60,7 @@ export {
 } from "./scoring.js";
 export { buildLensRequest } from "./prompts.js";
 export { applyVoiceGuards } from "./voiceGuards.js";
-export {
-  parseLensResult,
-  extractJson,
-  coerceSeverity,
-  coerceSpans,
-} from "./lenses.js";
+export { parseLensResult, extractJson, coerceSeverity, coerceSpans } from "./lenses.js";
 export type { LensResult, LensFinding, LensAltitude, LensPatternHit } from "./lenses.js";
 export { lensResultToFindings } from "./findings.js";
 
@@ -141,9 +135,7 @@ function buildDelta(
   const changed: Record<string, { from: number; to: number }> = {};
 
   // Dimension score deltas.
-  const prevByKey = new Map<DimensionKey, number>(
-    previous.dimensions.map((d) => [d.key, d.score]),
-  );
+  const prevByKey = new Map<DimensionKey, number>(previous.dimensions.map((d) => [d.key, d.score]));
   for (const d of dimensions) {
     const from = prevByKey.get(d.key);
     if (from !== undefined && from !== d.score) {
@@ -153,7 +145,11 @@ function buildDelta(
 
   // A few headline metric deltas (the ones the report cards on).
   const metricPairs: [string, number, number][] = [
-    ["fleschKincaidGrade", previous.metrics.readability.fleschKincaidGrade, metrics.readability.fleschKincaidGrade],
+    [
+      "fleschKincaidGrade",
+      previous.metrics.readability.fleschKincaidGrade,
+      metrics.readability.fleschKincaidGrade,
+    ],
     ["passiveFraction", previous.metrics.passiveFraction, metrics.passiveFraction],
     ["hedgeDensity", previous.metrics.hedgeDensity, metrics.hedgeDensity],
     ["fillerDensity", previous.metrics.fillerDensity, metrics.fillerDensity],
@@ -203,7 +199,8 @@ class CoachImpl implements Coach {
         lensFindings = lensResultToFindings(result, rubric.patterns, text.length);
       }
     } else {
-      metaNote = "No language model supplied — precision uses a neutral baseline; altitude omitted.";
+      metaNote =
+        "No language model supplied — precision uses a neutral baseline; altitude omitted.";
     }
 
     // ── 3. Precision score ──────────────────────────────────────────────────
@@ -237,9 +234,7 @@ class CoachImpl implements Coach {
     const grade = gradeFor(score, rubric.gradeBands).grade;
 
     // ── 6. Delta ────────────────────────────────────────────────────────────
-    const delta = input.previous
-      ? buildDelta(input.previous, dimensions, metrics)
-      : undefined;
+    const delta = input.previous ? buildDelta(input.previous, dimensions, metrics) : undefined;
 
     // ── Altitude (only when the LLM ran) ─────────────────────────────────────
     const altitude = lensResult

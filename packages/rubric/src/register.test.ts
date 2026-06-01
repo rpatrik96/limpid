@@ -5,8 +5,10 @@ import type { RubricConfig } from "@coach/contract";
 import { defaultRubric } from "./index.js";
 import { REGISTERS, registerNote, rubricForRegister } from "./register.js";
 
-const acc = (r: RubricConfig): number => r.dimensions.find((d) => d.key === "accessibility")?.weight ?? 0;
-const prec = (r: RubricConfig): number => r.dimensions.find((d) => d.key === "precision")?.weight ?? 0;
+const acc = (r: RubricConfig): number =>
+  r.dimensions.find((d) => d.key === "accessibility")?.weight ?? 0;
+const prec = (r: RubricConfig): number =>
+  r.dimensions.find((d) => d.key === "precision")?.weight ?? 0;
 
 describe("rubricForRegister", () => {
   it("every register weights the four dimensions to sum 1", () => {
