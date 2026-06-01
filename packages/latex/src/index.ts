@@ -26,6 +26,7 @@ import { preprocessLines, transformInline, type SourceLine } from "./strip.js";
 export { preprocessLines, transformInline, stripComment, type SourceLine } from "./strip.js";
 export { classifyTitle, findSourceSections } from "./sections.js";
 export type { SourceSection } from "./sections.js";
+export { locateSpanInSource } from "./locate.js";
 
 /** A sectioning command line we detected before inline-stripping mangled it. */
 interface SectionMarker {

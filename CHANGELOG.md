@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.9]
+
+### Added
+
+- Inline editor diagnostics: the deterministic checks (filler, passive voice,
+  hedges, weak openers, undefined acronyms) now appear as squiggles + Problems-panel
+  entries in the `.tex`, refreshed on open/save, with a hover explaining the rule and
+  a "Coach this in Limpid" quick-fix. Toggle with `limpid.diagnostics.enabled`. The
+  LLM judgment lenses stay in the Coach view. Spans map back to source via
+  `@coach/latex.locateSpanInSource` (whitespace-tolerant).
+
 ## [0.0.8]
 
 ### Fixed

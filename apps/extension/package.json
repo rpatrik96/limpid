@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -124,6 +124,11 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Re-run the coach automatically when you save the file shown in the Coach view (re-analysis is triggered only on save, not on every keystroke). With an LLM provider this spends one request per save."
+        },
+        "limpid.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show inline editor diagnostics (squiggles + Problems panel) for the deterministic checks — filler, passive voice, hedges, weak openers, undefined acronyms — refreshed on open/save. The LLM judgment lenses stay in the Coach view."
         },
         "limpid.ollama.baseURL": {
           "type": "string",

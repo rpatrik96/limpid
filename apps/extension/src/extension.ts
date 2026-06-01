@@ -23,6 +23,7 @@ import { renderReport, renderPlaceholder, DEFAULT_AUDIENCES } from "./render.js"
 import { pickLanguageModel } from "./providers.js";
 import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
+import { registerDiagnostics } from "./diagnostics.js";
 
 const COMMAND_ID = "limpid.coach";
 const VIEW_TYPE = "limpid.coachView";
@@ -67,6 +68,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("limpid.testRule", () => testRuleCommand()),
     vscode.workspace.onDidSaveTextDocument((doc) => void onSave(doc)),
   );
+
+  registerDiagnostics(context);
 }
 
 export function deactivate(): void {
