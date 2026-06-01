@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.10]
+
+### Added
+
+- Learning Center — a second **"Learn"** view in the Limpid sidebar: a browsable
+  library of the 12 named failure patterns (definition, how to spot, why it fails,
+  before/after), plus a "your writing" panel surfacing your most recurring patterns,
+  recent grade trend, and metric averages across runs. Each coach run is recorded to
+  `.limpid/history.json` via the pure `@coach/history` aggregator; toggle with
+  `limpid.history.enabled`.
+
 ## [0.0.9]
 
 ### Added

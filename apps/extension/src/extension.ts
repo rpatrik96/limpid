@@ -24,6 +24,7 @@ import { pickLanguageModel } from "./providers.js";
 import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
 import { registerDiagnostics } from "./diagnostics.js";
+import { registerLearnView, recordRun } from "./learn.js";
 
 const COMMAND_ID = "limpid.coach";
 const VIEW_TYPE = "limpid.coachView";
@@ -70,6 +71,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   registerDiagnostics(context);
+  registerLearnView(context);
 }
 
 export function deactivate(): void {
@@ -181,6 +183,7 @@ async function coachAndShow(doc: vscode.TextDocument, scope: Scope, opts: ShowOp
 
   session = { docUri: doc.uri, fileName: doc.fileName, scope, report, audience };
   lastReportByDoc.set(doc.uri.toString(), report);
+  void recordRun(report, doc.fileName);
 
   if (opts.reveal) await viewProvider?.show();
   else viewProvider?.render();

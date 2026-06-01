@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -130,6 +130,11 @@
           "default": true,
           "markdownDescription": "Show inline editor diagnostics (squiggles + Problems panel) for the deterministic checks — filler, passive voice, hedges, weak openers, undefined acronyms — refreshed on open/save. The LLM judgment lenses stay in the Coach view."
         },
+        "limpid.history.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Record one entry per coach run to `.limpid/history.json` to power the **Learn** view's recurring-pattern insight and grade trend. Disable to keep no history."
+        },
         "limpid.ollama.baseURL": {
           "type": "string",
           "default": "http://localhost:11434/v1",
@@ -190,6 +195,12 @@
           "id": "limpid.coachView",
           "name": "Coach",
           "contextualTitle": "Limpid"
+        },
+        {
+          "type": "webview",
+          "id": "limpid.learnView",
+          "name": "Learn",
+          "contextualTitle": "Limpid"
         }
       ]
     }
@@ -207,6 +218,7 @@
     "@coach/coach": "*",
     "@coach/contract": "*",
     "@coach/engine": "*",
+    "@coach/history": "*",
     "@coach/latex": "*",
     "@coach/providers": "*",
     "@coach/rubric": "*"

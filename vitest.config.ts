@@ -13,6 +13,7 @@ export default defineConfig({
       "@coach/latex": r("packages/latex/src/index.ts"),
       "@coach/rubric": r("packages/rubric/src/index.ts"),
       "@coach/providers": r("packages/providers/src/index.ts"),
+      "@coach/history": r("packages/history/src/index.ts"),
       "@coach/coach": r("packages/coach/src/index.ts"),
     },
   },

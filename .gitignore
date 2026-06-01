@@ -7,3 +7,4 @@ out/
 coverage/
 .vscode-test/
 *.log
+.limpid/history.json
