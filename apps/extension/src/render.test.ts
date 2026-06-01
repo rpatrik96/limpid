@@ -61,6 +61,31 @@ describe("renderReport", () => {
     }
   });
 
+  it("makes the dimension scale unambiguous: '/ 10', a weight, and a meter role", async () => {
+    const report = await buildReport();
+    const html = renderReport(report);
+    // The out-of-10 cue appears per dimension and as a section caption.
+    expect(html).toContain("/ 10");
+    expect(html).toContain("out of 10");
+    // Weight is labelled "weight", not a bare percentage that reads as the score.
+    for (const d of report.dimensions) {
+      expect(html).toContain(`${Math.round(d.weight * 100)}% weight`);
+    }
+    // The bar exposes its 0–10 range to assistive tech.
+    expect(html).toContain('role="meter"');
+    expect(html).toContain('aria-valuemax="10"');
+  });
+
+  it("renders a highlight legend mapping severities to meanings near the prose", async () => {
+    const report = await buildReport();
+    const html = renderReport(report);
+    expect(html).toContain('class="legend"');
+    expect(html).toContain("legend-swatch sev-error");
+    expect(html).toContain("legend-swatch sev-warning");
+    expect(html).toContain("legend-swatch sev-suggestion");
+    expect(html).toContain("legend-swatch sev-info");
+  });
+
   it("renders the altitude banner when the LLM ran", async () => {
     const report = await buildReport();
     expect(report.altitude).toBeDefined();
@@ -203,6 +228,19 @@ describe("interactive controls", () => {
     const html = renderReport(reportWithFinding());
     expect(html).toContain('data-finding="0"');
     expect(html).toContain(">reveal</button>");
+  });
+
+  it("declutters the card: Why/Fix as a definition list, source demoted to a muted citation", () => {
+    const report = reportWithFinding();
+    report.findings[0]!.source = "Strunk & White — omit needless words.";
+    const html = renderReport(report);
+    // Why/Fix recede into a tight definition list rather than stacked paragraphs.
+    expect(html).toContain('<dl class="card-wf">');
+    expect(html).toContain("<dt>Why</dt>");
+    // The per-finding source is preserved verbatim but demoted to a small line.
+    expect(html).toContain('<small class="card-src">');
+    expect(html).toContain("omit needless words");
+    expect(html).not.toContain('<p class="card-src">');
   });
 
   it("emits a nonce'd controller that posts setAudience and reveal messages", () => {

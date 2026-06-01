@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7]
+
+### Changed
+
+- Redesigned the Coach webview for the narrow Activity-Bar sidebar: single-column layout, generous
+  spacing, and full-width controls/buttons that no longer crowd at ~320px.
+- Dimension scores now read on an explicit **out-of-10** scale with the weighting labelled.
+- Decluttered the coach cards and de-emphasized each finding's reference into a small, muted citation.
+
+### Added
+
+- A highlight legend mapping the prose underline colours to their meaning.
+
 ## [0.0.6]
 
 ### Added
