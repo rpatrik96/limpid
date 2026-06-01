@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-226-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-243-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -72,8 +72,9 @@ Open a `.tex` file, select a paragraph (or none, for the whole file), and run
 
 ## Where it lives
 
-Limpid adds a **Coach** view to the Activity Bar (the Limpid icon in the left
-sidebar). Trigger an analysis from there, or:
+Limpid adds two views to the Activity Bar (the Limpid icon in the left sidebar):
+**Coach** (the per-run report) and **Learn** (the pattern library + your trends
+over time). Trigger an analysis from the Coach view, or:
 
 - **right-click** a selection → _Limpid: Coach this selection / section_,
 - press **⌘⌥L / Ctrl+Alt+L** (coaches the selection, or the whole file if nothing
@@ -99,6 +100,14 @@ Whatever you coached is remembered, so **saving the file re-runs the same scope*
 - **Protects your voice:** it will not punish em-dashes, colon-payoffs, or long
   sentences that resolve cleanly — the test is the Economist's "must it be read
   twice?", not raw length. Scope-hedging is a virtue; conviction-hedging is a fault.
+- **Inline diagnostics:** the deterministic checks also surface as editor
+  squiggles + Problems-panel entries in the `.tex` (refreshed on open/save), each
+  with a hover explaining the rule and a "Coach this in Limpid" quick-fix. The LLM
+  judgment lenses stay in the Coach view. Toggle with `limpid.diagnostics.enabled`.
+- **Learns with you:** the **Learn** view is a browsable library of the named
+  failure patterns plus a "your writing" panel — your most recurring patterns,
+  recent grade trend, and metric averages across runs (recorded to
+  `.limpid/history.json`; toggle with `limpid.history.enabled`).
 
 The mechanical checks are deterministic (auditable, instant). The four judgment
 calls that need understanding — stress position, paragraph cohesion, audience
@@ -163,7 +172,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 226 vitest tests across core + extension
+npm test            # 243 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses
@@ -174,7 +183,7 @@ Requires **Node 22**. Other root scripts: `test:watch`, `lint` / `lint:fix`,
 
 ## Project layout
 
-TypeScript monorepo, npm workspaces, ESM throughout. `@coach/{contract,engine,latex,rubric}`
+TypeScript monorepo, npm workspaces, ESM throughout. `@coach/{contract,engine,latex,rubric,history}`
 are pure (no `vscode`, network, or `fs`); the host concerns live in the providers
 package and the two apps.
 
@@ -186,7 +195,8 @@ package and the two apps.
 | `packages/rubric`    | the canon as data: rules, named patterns, thresholds, voice guards — pure                                        |
 | `packages/coach`     | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness                              |
 | `packages/providers` | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + CLI |
-| `apps/extension`     | the VS Code extension: command + webview Coach panel, Copilot adapter, SecretStorage keys                        |
+| `packages/history`   | pure aggregation of coaching runs over time (recurring patterns, grade trend, metric averages) — pure            |
+| `apps/extension`     | the VS Code extension: Coach + Learn webviews, inline `.tex` diagnostics, Copilot adapter, SecretStorage keys    |
 | `apps/cli`           | the `limpid` deterministic gate (`apps/cli/dist/cli.js`)                                                         |
 
 ## Architecture
@@ -198,11 +208,16 @@ boundaries and data flow, [DESIGN.md](DESIGN.md) for the full spec, and
 
 ## Status
 
-v0/v1: the deterministic path and the webview (highlights, cards, audience
-control, reveal-in-editor) work end-to-end; the LLM lenses are implemented and
-unit-tested against a mock model, and wired in the host to Copilot, the Claude
-Code CLI, Ollama, and the API providers (Anthropic / OpenAI / OpenRouter / Groq /
-Together / Mistral) with SecretStorage-backed keys and graceful deterministic
-fallback. Not yet built: the editable-rules GUI, the learning center /
-gamification, trends over time, the public web surface, and inline `.tex`
-squiggles (all v2).
+The deterministic path and the webview (highlights, cards, audience control,
+reveal-in-editor) work end-to-end; the LLM lenses are implemented and unit-tested
+against a mock model, and wired in the host to Copilot, the Claude Code CLI,
+Ollama, and the API providers (Anthropic / OpenAI / OpenRouter / Groq / Together /
+Mistral) with SecretStorage-backed keys and graceful deterministic fallback.
+Beyond the core: editable rules + a rule playground (`.limpid/rules.json`), the
+`limpid` CLI gate, multi-register coaching, inline `.tex` diagnostics, and the
+**Learn** view (pattern library + trends over time) all ship. Inline diagnostics
+map findings back to source with a whitespace-tolerant snippet search — verbatim
+accurate, with a precise per-character source map still to come; the Learn view's
+recurring-pattern insight populates from the LLM-diagnosed patterns (the grade and
+metric trend record even on deterministic-only runs). Not yet built: the public
+web surface, a precise source map, and learning-center quizzes / gamification.

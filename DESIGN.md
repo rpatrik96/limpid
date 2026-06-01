@@ -134,6 +134,12 @@ Key_, never settings. On any model error the host degrades to a deterministic re
 - **Shipped — (E)** editable rules + rule playground (`.limpid/rules.json`, _Edit/Test Rule_ commands;
   pure `runDetector`/`parseUserRules`/`mergeRubric`), **(F)** the `limpid` CLI gate (`apps/cli`) +
   example GitHub Action / pre-commit, **(G)** multi-register coaching (`limpid.register` / `--register`:
-  paper/blog/grant/sop, auto by file type). Also extracted the host-side adapters into `@coach/providers`.
-- **Deferred — (B)** public web app, **(C)** inline `.tex` squiggles, **(D)** learning center + trends,
-  **(H)** section-aware deepening.
+  paper/blog/grant/sop, auto by file type), **(C)** inline `.tex` diagnostics — the deterministic checks
+  as editor squiggles + Problems-panel entries, with a hover rationale and a _Coach this in Limpid_
+  quick-fix; spans map back to source via the whitespace-tolerant `@coach/latex.locateSpanInSource`,
+  **(D)** the Learning Center — a **Learn** view pairing the named-pattern library with a
+  recurring-pattern / grade-trend / metric-average panel computed by the pure `@coach/history` over
+  `.limpid/history.json`. Also extracted the host-side adapters into `@coach/providers`.
+- **Deferred — (B)** public web app, **(H)** section-aware deepening, and two tier-2 follow-ups to the
+  shipped features: a precise per-character source map for inline diagnostics (tier-1 today is the
+  whitespace-tolerant snippet search) and learning-center quizzes / gamification.
