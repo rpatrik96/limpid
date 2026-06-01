@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8]
+
+### Fixed
+
+- Prose text was invisible on dark themes: highlighted (`<mark>`) words kept the
+  browser's default near-black text colour, so only the underline showed. `<mark>`
+  now inherits the colour, and `body` pins text to the VS Code theme foreground.
+
 ## [0.0.7]
 
 ### Changed

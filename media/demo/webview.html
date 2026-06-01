@@ -24,6 +24,8 @@
 body {
   font-family: var(--vscode-font-family, system-ui, sans-serif);
   font-size: var(--vscode-font-size, 13px);
+  color: var(--vscode-foreground, #cccccc);
+  background-color: var(--vscode-sideBar-background, transparent);
   margin: 0;
   padding: var(--sp-4) var(--sp-3);
   line-height: 1.5;
@@ -87,7 +89,7 @@ h2 {
 .legend-swatch.sev-warning { border-color: var(--sev-warning); }
 .legend-swatch.sev-error { border-color: var(--sev-error); }
 .prose-body { white-space: pre-wrap; word-break: break-word; padding: var(--sp-3); border-radius: var(--radius); background: rgba(127,127,127,0.06); }
-mark { background: transparent; border-bottom: 2px solid; padding: 0 0.05em; }
+mark { background: transparent; color: inherit; border-bottom: 2px solid; padding: 0 0.05em; }
 mark.sev-info { border-color: var(--sev-info); }
 mark.sev-suggestion { border-color: var(--sev-suggestion); }
 mark.sev-warning { border-color: var(--sev-warning); }

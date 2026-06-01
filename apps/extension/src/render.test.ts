@@ -86,6 +86,16 @@ describe("renderReport", () => {
     expect(html).toContain("legend-swatch sev-info");
   });
 
+  it("pins text colour to the VS Code theme so prose + marks stay visible on dark themes", async () => {
+    const report = await buildReport();
+    const html = renderReport(report);
+    // Body text uses the theme foreground, not the user-agent default.
+    expect(html).toContain("color: var(--vscode-foreground");
+    // <mark> inherits that colour rather than the browser's near-black mark colour
+    // (which was invisible on dark themes — only the underline showed).
+    expect(html).toMatch(/mark \{[^}]*color: inherit/);
+  });
+
   it("renders the altitude banner when the LLM ran", async () => {
     const report = await buildReport();
     expect(report.altitude).toBeDefined();
