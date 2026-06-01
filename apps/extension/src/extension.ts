@@ -1,60 +1,71 @@
 /**
  * Limpid — VS Code extension entry point.
  *
- * The one package allowed to import `vscode`. It wires the host to the pure
- * @coach core through the documented data flow:
+ * Wires the host to the pure @coach core (latex.extract → engine.analyze →
+ * coach.review → CoachReport) and renders into an Activity-Bar webview view.
  *
- *   latex.extract(tex) → engine.analyze(text) → coach.review({…}) → CoachReport
- *
- * then renders the report into a webview panel. A model is chosen by `providers`
- * (Copilot, Claude, OpenAI/OpenRouter/Groq/Together/Mistral, Ollama, or the Claude
- * Code CLI; "auto" prefers free Copilot). Without one — or if the model errors —
- * the coach returns a deterministic-only report. The panel is interactive: changing
- * the audience re-runs the review at a new altitude, and a finding's "reveal"
- * button selects the offending span back in the editor.
+ * What gets coached is a "scope": the current selection, the whole document, or a
+ * chosen LaTeX section. The scope is remembered, so saving the file re-runs the
+ * SAME scope (re-analysis triggers on save only, never on keystroke — gated by
+ * `limpid.reanalyzeOnSave`). A model is chosen by `providers` (Copilot, Claude,
+ * OpenAI/OpenRouter/Groq/Together/Mistral, Ollama, or the Claude Code CLI); without
+ * one — or on model error — the coach returns a deterministic report.
  */
 import * as vscode from "vscode";
 
 import type { CoachInput, CoachReport, Extraction, LanguageModel } from "@coach/contract";
-import { extract } from "@coach/latex";
+import { extract, findSourceSections } from "@coach/latex";
 import { analyze } from "@coach/engine";
 import { createCoach } from "@coach/coach";
+import { rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
 
-import { renderReport, DEFAULT_AUDIENCES } from "./render.js";
+import { renderReport, renderPlaceholder, DEFAULT_AUDIENCES } from "./render.js";
 import { pickLanguageModel } from "./providers.js";
 import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
-import { rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
 
 const COMMAND_ID = "limpid.coach";
-const PANEL_VIEW_TYPE = "limpid.panel";
+const VIEW_TYPE = "limpid.coachView";
 const CONFIG_SECTION = "limpid";
 
-/** Per-document session so audience re-runs and deltas have context to reuse. */
+/** What to coach. Selection offsets index into the document text. */
+type Scope =
+  | { kind: "document" }
+  | { kind: "selection"; start: number; end: number }
+  | { kind: "section"; title: string; index: number };
+
+/** Per-document session so audience re-runs, section re-runs, and deltas reuse context. */
 interface Session {
-  tex: string;
-  fileName: string;
   docUri: vscode.Uri;
+  fileName: string;
+  scope: Scope;
   report: CoachReport;
   audience: string | undefined;
 }
 
 let coach = createCoach();
 let extContext: vscode.ExtensionContext | undefined;
-let activePanel: vscode.WebviewPanel | undefined;
 let session: Session | undefined;
+let viewProvider: CoachViewProvider | undefined;
 /** Last report per document URI, so the next run fills a GradeDelta. */
 const lastReportByDoc = new Map<string, CoachReport>();
 
 export function activate(context: vscode.ExtensionContext): void {
   coach = createCoach();
   extContext = context;
+  viewProvider = new CoachViewProvider(context);
+
   context.subscriptions.push(
-    vscode.commands.registerCommand(COMMAND_ID, () => runCommand(context)),
+    vscode.window.registerWebviewViewProvider(VIEW_TYPE, viewProvider, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
+    vscode.commands.registerCommand(COMMAND_ID, () => coachSelectionCommand()),
+    vscode.commands.registerCommand("limpid.coachSection", () => coachSectionCommand()),
     vscode.commands.registerCommand("limpid.setApiKey", () => setApiKeyCommand(context)),
     vscode.commands.registerCommand("limpid.clearApiKey", () => clearApiKeyCommand(context)),
     vscode.commands.registerCommand("limpid.editRules", () => editRulesCommand()),
     vscode.commands.registerCommand("limpid.testRule", () => testRuleCommand()),
+    vscode.workspace.onDidSaveTextDocument((doc) => void onSave(doc)),
   );
 }
 
@@ -62,37 +73,106 @@ export function deactivate(): void {
   lastReportByDoc.clear();
   session = undefined;
   extContext = undefined;
+  viewProvider = undefined;
 }
 
-async function runCommand(context: vscode.ExtensionContext): Promise<void> {
+// ── Command entry points ─────────────────────────────────────────────────────
+
+async function coachSelectionCommand(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     void vscode.window.showWarningMessage("Limpid: open a document first.");
     return;
   }
+  const doc = editor.document;
+  const sel = editor.selection;
+  const scope: Scope = sel.isEmpty
+    ? { kind: "document" }
+    : { kind: "selection", start: doc.offsetAt(sel.start), end: doc.offsetAt(sel.end) };
+  await coachAndShow(doc, scope, { reveal: true });
+}
 
-  const { tex, fileName } = readTarget(editor);
-  if (tex.trim().length === 0) {
+async function coachSectionCommand(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    void vscode.window.showWarningMessage("Limpid: open a document first.");
+    return;
+  }
+  const doc = editor.document;
+  const sections = findSourceSections(doc.getText());
+  if (sections.length === 0) {
+    void vscode.window.showInformationMessage("Limpid: no \\section/\\subsection found in this file.");
+    return;
+  }
+
+  const pick = await vscode.window.showQuickPick(
+    sections.map((s, index) => ({
+      label: `${"  ".repeat(Math.max(0, s.level - 2))}${s.title || s.command}`,
+      description: s.command,
+      index,
+      title: s.title,
+    })),
+    { placeHolder: "Pick a section to coach" },
+  );
+  if (!pick) return;
+
+  await coachAndShow(doc, { kind: "section", title: pick.title, index: pick.index }, { reveal: true });
+}
+
+/** Re-run the active session's scope when its document is saved (opt-out via config). */
+async function onSave(doc: vscode.TextDocument): Promise<void> {
+  if (!session || doc.uri.toString() !== session.docUri.toString()) return;
+  const enabled = vscode.workspace.getConfiguration(CONFIG_SECTION).get<boolean>("reanalyzeOnSave") ?? true;
+  if (!enabled) return;
+  await coachAndShow(doc, session.scope, { reveal: false });
+}
+
+// ── Core: resolve scope → text → review → view ───────────────────────────────
+
+/** Extract the text the scope refers to from the (current) document. */
+function textForScope(doc: vscode.TextDocument, scope: Scope): string {
+  if (scope.kind === "document") return doc.getText();
+
+  if (scope.kind === "selection") {
+    const max = doc.getText().length;
+    const start = Math.max(0, Math.min(scope.start, max));
+    const end = Math.max(start, Math.min(scope.end, max));
+    return doc.getText(new vscode.Range(doc.positionAt(start), doc.positionAt(end)));
+  }
+
+  // section — re-find against the current text (it may have shifted since the pick).
+  const full = doc.getText();
+  const sections = findSourceSections(full);
+  let sec = sections[scope.index];
+  if (!sec || sec.title !== scope.title) sec = sections.find((s) => s.title === scope.title);
+  return sec ? full.slice(sec.start, sec.end) : full;
+}
+
+interface ShowOpts {
+  /** true: reveal/focus the view (manual runs); false: update in place (save runs). */
+  reveal: boolean;
+}
+
+async function coachAndShow(doc: vscode.TextDocument, scope: Scope, opts: ShowOpts): Promise<void> {
+  const text = textForScope(doc, scope);
+  if (text.trim().length === 0) {
     void vscode.window.showWarningMessage("Limpid: nothing to coach (empty selection).");
     return;
   }
 
-  const docUri = editor.document.uri;
-  const audience = configString("audience");
-  const previous = lastReportByDoc.get(docUri.toString());
+  const audience = session?.docUri.toString() === doc.uri.toString() ? session.audience : configString("audience");
+  const previous = lastReportByDoc.get(doc.uri.toString());
 
-  const report = await runReview(tex, fileName, audience, previous);
-  session = { tex, fileName, docUri, report, audience };
-  lastReportByDoc.set(docUri.toString(), report);
-  showPanel(context, report);
-}
+  let report = await runReview(text, doc.fileName, audience, previous);
+  if (scope.kind === "section" && scope.title) {
+    report = { ...report, target: { ...report.target, section: scope.title } };
+  }
 
-/** Read the selection if non-empty, else the whole document. */
-function readTarget(editor: vscode.TextEditor): { tex: string; fileName: string } {
-  const doc = editor.document;
-  const selection = editor.selection;
-  const tex = selection.isEmpty ? doc.getText() : doc.getText(selection);
-  return { tex, fileName: doc.fileName };
+  session = { docUri: doc.uri, fileName: doc.fileName, scope, report, audience };
+  lastReportByDoc.set(doc.uri.toString(), report);
+
+  if (opts.reveal) await viewProvider?.show();
+  else viewProvider?.render();
 }
 
 /** Read a trimmed string setting, returning undefined when empty. */
@@ -109,7 +189,7 @@ function resolveRegister(fileName: string): Register {
   return /\.(md|markdown)$/i.test(fileName) ? "blog" : "paper";
 }
 
-/** The documented pipeline (extract → analyze → review), with progress UI. */
+/** The documented pipeline (extract → analyze → review), with a status-bar spinner. */
 async function runReview(
   tex: string,
   fileName: string,
@@ -117,7 +197,7 @@ async function runReview(
   previous: CoachReport | undefined,
 ): Promise<CoachReport> {
   return vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: "Limpid: analyzing…" },
+    { location: vscode.ProgressLocation.Window, title: "Limpid: analyzing…" },
     async () => {
       const extraction: Extraction = extract(tex);
       const engine = analyze(extraction.text);
@@ -158,54 +238,6 @@ async function reviewWithFallback(base: CoachInput, model: LanguageModel): Promi
   }
 }
 
-/** Open (or reuse) the coach webview panel; wire its message handler once. */
-function showPanel(context: vscode.ExtensionContext, report: CoachReport): void {
-  if (!activePanel) {
-    activePanel = vscode.window.createWebviewPanel(
-      PANEL_VIEW_TYPE,
-      "Limpid",
-      vscode.ViewColumn.Beside,
-      { enableScripts: true, retainContextWhenHidden: true },
-    );
-    activePanel.onDidDispose(
-      () => {
-        activePanel = undefined;
-      },
-      null,
-      context.subscriptions,
-    );
-    activePanel.webview.onDidReceiveMessage(handleMessage, undefined, context.subscriptions);
-  }
-  update(report);
-}
-
-/** Render the current report into the panel. */
-function update(report: CoachReport): void {
-  if (!activePanel) return;
-  activePanel.webview.html = renderReport(report, {
-    nonce: makeNonce(),
-    audiences: DEFAULT_AUDIENCES,
-    currentAudience: session?.audience ?? "",
-  });
-  activePanel.reveal(vscode.ViewColumn.Beside, true);
-}
-
-/** Handle webview → host messages: re-run at a new audience, or reveal a span. */
-async function handleMessage(message: unknown): Promise<void> {
-  if (!message || typeof message !== "object" || !session) return;
-  const msg = message as { type?: string; audience?: string; finding?: number };
-
-  if (msg.type === "setAudience") {
-    const audience = msg.audience?.trim() || undefined;
-    const report = await runReview(session.tex, session.fileName, audience, session.report);
-    session = { ...session, report, audience };
-    lastReportByDoc.set(session.docUri.toString(), report);
-    update(report);
-  } else if (msg.type === "reveal" && typeof msg.finding === "number") {
-    await revealFinding(session, msg.finding);
-  }
-}
-
 /** Best-effort: find the finding's snippet in the source and select it. */
 async function revealFinding(s: Session, index: number): Promise<void> {
   const finding = s.report.findings[index];
@@ -222,7 +254,6 @@ async function revealFinding(s: Session, index: number): Promise<void> {
     return;
   }
 
-  // The extracted prose differs from raw .tex, so locate the snippet by text.
   const idx = doc.getText().indexOf(snippet);
   if (idx < 0) {
     void vscode.window.showInformationMessage(
@@ -235,6 +266,73 @@ async function revealFinding(s: Session, index: number): Promise<void> {
   const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
   editor.selection = new vscode.Selection(start, end);
   editor.revealRange(new vscode.Range(start, end), vscode.TextEditorRevealType.InCenter);
+}
+
+/** The Activity-Bar "Coach" view: hosts the report GUI and the message handlers. */
+class CoachViewProvider implements vscode.WebviewViewProvider {
+  private view: vscode.WebviewView | undefined;
+
+  constructor(private readonly context: vscode.ExtensionContext) {}
+
+  resolveWebviewView(view: vscode.WebviewView): void {
+    this.view = view;
+    view.webview.options = { enableScripts: true };
+    view.onDidDispose(
+      () => {
+        this.view = undefined;
+      },
+      null,
+      this.context.subscriptions,
+    );
+    view.webview.onDidReceiveMessage((m) => void this.onMessage(m), undefined, this.context.subscriptions);
+    this.render();
+  }
+
+  /** Reveal the view (resolving it if hidden) and render the latest report. */
+  async show(): Promise<void> {
+    await vscode.commands.executeCommand(`${VIEW_TYPE}.focus`);
+    this.render();
+  }
+
+  /** Render the current session's report, or a placeholder prompt. No focus change. */
+  render(): void {
+    if (!this.view) return;
+    this.view.webview.html = session
+      ? renderReport(session.report, {
+          nonce: makeNonce(),
+          audiences: DEFAULT_AUDIENCES,
+          currentAudience: session.audience ?? "",
+        })
+      : renderPlaceholder({ nonce: makeNonce() });
+  }
+
+  private async onMessage(message: unknown): Promise<void> {
+    if (!message || typeof message !== "object") return;
+    const msg = message as { type?: string; audience?: string; finding?: number };
+
+    if (msg.type === "coach") {
+      await coachSelectionCommand();
+      return;
+    }
+    if (msg.type === "coachSection") {
+      await coachSectionCommand();
+      return;
+    }
+    if (!session) return;
+
+    if (msg.type === "setAudience") {
+      const audience = msg.audience?.trim() || undefined;
+      session = { ...session, audience };
+      try {
+        const doc = await vscode.workspace.openTextDocument(session.docUri);
+        await coachAndShow(doc, session.scope, { reveal: false });
+      } catch {
+        /* document gone — keep the current report */
+      }
+    } else if (msg.type === "reveal" && typeof msg.finding === "number") {
+      await revealFinding(session, msg.finding);
+    }
+  }
 }
 
 /** A 32-char nonce for the webview's inline-style/script CSP. */

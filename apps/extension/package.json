@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -38,6 +38,11 @@
       {
         "command": "limpid.testRule",
         "title": "Test Rule against selection",
+        "category": "Limpid"
+      },
+      {
+        "command": "limpid.coachSection",
+        "title": "Coach a section…",
         "category": "Limpid"
       }
     ],
@@ -86,6 +91,11 @@
           "default": "auto",
           "markdownDescription": "Writing register — re-weights the grade and shifts readability targets so a blog post isn't graded like a paper. `auto` picks by file type."
         },
+        "limpid.reanalyzeOnSave": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Re-run the coach automatically when you save the file shown in the Coach view (re-analysis is triggered only on save, not on every keystroke). With an LLM provider this spends one request per save."
+        },
         "limpid.ollama.baseURL": {
           "type": "string",
           "default": "http://localhost:11434/v1",
@@ -107,6 +117,47 @@
           "markdownDescription": "Model id for the custom OpenAI-compatible endpoint."
         }
       }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "limpid.coach",
+          "when": "editorTextFocus",
+          "group": "1_modification@99"
+        },
+        {
+          "command": "limpid.coachSection",
+          "when": "editorTextFocus && resourceLangId == latex",
+          "group": "1_modification@100"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "limpid.coach",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l",
+        "when": "editorTextFocus"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "limpid",
+          "title": "Limpid",
+          "icon": "media/limpid.svg"
+        }
+      ]
+    },
+    "views": {
+      "limpid": [
+        {
+          "type": "webview",
+          "id": "limpid.coachView",
+          "name": "Coach",
+          "contextualTitle": "Limpid"
+        }
+      ]
     }
   },
   "scripts": {

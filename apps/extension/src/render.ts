@@ -213,18 +213,19 @@ function renderMeta(report: CoachReport): string {
   return `<div class="meta-note">${flagHtml}${note}</div>`;
 }
 
-/** The nonce'd controller: posts setAudience/reveal to the host; inert elsewhere. */
+/** The nonce'd controller: posts setAudience/reveal/coach to the host; inert elsewhere. */
 function renderController(nonceAttr: string): string {
   return `<script${nonceAttr}>
 const api = typeof acquireVsCodeApi !== "undefined" ? acquireVsCodeApi() : null;
+function post(m) { if (api) api.postMessage(m); }
 const sel = document.getElementById("audience");
-if (sel && api) sel.addEventListener("change", function () {
-  api.postMessage({ type: "setAudience", audience: sel.value });
-});
+if (sel) sel.addEventListener("change", function () { post({ type: "setAudience", audience: sel.value }); });
+const coachBtn = document.getElementById("coach-btn");
+if (coachBtn) coachBtn.addEventListener("click", function () { post({ type: "coach" }); });
+const sectionBtn = document.getElementById("coach-section-btn");
+if (sectionBtn) sectionBtn.addEventListener("click", function () { post({ type: "coachSection" }); });
 document.querySelectorAll("[data-finding]").forEach(function (el) {
-  el.addEventListener("click", function () {
-    if (api) api.postMessage({ type: "reveal", finding: Number(el.getAttribute("data-finding")) });
-  });
+  el.addEventListener("click", function () { post({ type: "reveal", finding: Number(el.getAttribute("data-finding")) }); });
 });
 </script>`;
 }
@@ -274,6 +275,10 @@ ${csp}
     ${renderDelta(report)}
   </div>
 </header>
+<div class="actions">
+  <button id="coach-btn" class="action-btn">Coach selection</button>
+  <button id="coach-section-btn" class="action-btn">Coach section…</button>
+</div>
 ${renderMeta(report)}
 ${renderAltitude(report, audiences, current)}
 <section class="dimensions"><h2>Dimensions</h2>${renderDimensions(report.dimensions)}</section>
@@ -282,6 +287,38 @@ ${renderAltitude(report, audiences, current)}
     report.findings,
   )}</div></section>
 ${cardsBlock}
+${renderController(nonceAttr)}
+</body>
+</html>`;
+}
+
+/** The empty-state document (no report yet): a prompt + the action buttons. */
+export function renderPlaceholder(options: RenderOptions = {}): string {
+  const nonceAttr = options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : "";
+  const cspNonce = options.nonce ? escapeHtml(options.nonce) : "";
+  const csp = options.nonce
+    ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-${cspNonce}'; script-src 'nonce-${cspNonce}';">`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+${csp}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Limpid</title>
+<style${nonceAttr}>${STYLE}</style>
+</head>
+<body>
+<div class="empty-state">
+  <h2>Limpid</h2>
+  <p>Coach a passage against good writing — and learn why. Select text in your editor (or nothing, for the whole file), then:</p>
+  <div class="actions">
+    <button id="coach-btn" class="action-btn">Coach selection</button>
+    <button id="coach-section-btn" class="action-btn">Coach section…</button>
+  </div>
+  <p class="hint">⌘⌥L / Ctrl+Alt+L coaches the selection. Re-analysis also runs when you save.</p>
+</div>
 ${renderController(nonceAttr)}
 </body>
 </html>`;
@@ -329,4 +366,10 @@ mark.sev-error { border-color: #e0574a; }
 .after { padding: 0.3rem 0.5rem; border-radius: 0.3rem; background: rgba(91,191,106,0.12); }
 .card-src { font-size: 0.8rem; opacity: 0.65; margin: 0.25rem 0 0; }
 .empty { opacity: 0.7; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.action-btn { font-size: 0.8rem; padding: 0.3rem 0.7rem; border: 1px solid var(--vscode-button-border, rgba(127,127,127,0.4)); border-radius: 0.3rem; background: var(--vscode-button-background, rgba(127,127,127,0.18)); color: var(--vscode-button-foreground, inherit); cursor: pointer; }
+.action-btn:hover { background: var(--vscode-button-hoverBackground, rgba(127,127,127,0.32)); }
+.empty-state { padding: 1rem 0.25rem; }
+.empty-state p { opacity: 0.85; }
+.empty-state .hint { font-size: 0.8rem; opacity: 0.6; margin-top: 1rem; }
 `;

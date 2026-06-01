@@ -10,7 +10,23 @@ cognitive reason, and shows a before/after. It runs locally; your drafts never
 leave your machine.
 
 It is built for LaTeX (and plain prose): point it at a `.tex` selection and it
-strips the markup, scores four dimensions, and renders a coaching panel.
+strips the markup, scores four dimensions, and coaches it.
+
+## Where it lives
+
+Limpid adds a **Coach** view to the Activity Bar (the Limpid icon in the left
+sidebar). Trigger an analysis from there, or:
+
+- **right-click** a selection → *Limpid: Coach this selection / section*,
+- press **⌘⌥L / Ctrl+Alt+L** (coaches the selection, or the whole file if nothing
+  is selected),
+- run **Limpid: Coach a section…** to pick a `\section`/`\subsection`/… and coach
+  just that (it includes nested subsections),
+- or click **Coach selection** / **Coach section…** in the view itself.
+
+Whatever you coached is remembered, so **saving the file re-runs the same scope**
+(re-analysis happens on save only, never on keystroke — toggle with
+`limpid.reanalyzeOnSave`).
 
 ## What it does
 
@@ -19,7 +35,7 @@ strips the markup, scores four dimensions, and renders a coaching panel.
 - **Coaches** with cards: a named pattern (Buried Lede, Idea Soup, Hedge
   Stacking…) → *why it fails* → a before/after fix → the rule it comes from.
 - **Audience altitude:** judges whether the prose sits at the right level for its
-  reader. Limpid infers the reader, and you can change it in the panel to re-run.
+  reader. Limpid infers the reader, and you can change it in the view to re-run.
 - **Grade + dimensions** (Accessibility / Clarity / Flow / Precision) with a
   delta vs. your last run on the same file.
 - **Protects your voice:** it will not punish em-dashes, colon-payoffs, or long
