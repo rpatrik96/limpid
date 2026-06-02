@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { extract } from "./index.js";
-import { locateSpanInSource } from "./locate.js";
+import { extract, locateSpanInSource } from "./index.js";
 
 const TEX = String.raw`\section{Introduction}
 It is important to note that the model

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { extract as extractMd } from "@coach/markdown";
+import { extract as extractTex } from "@coach/latex";
+
 import { checkText, formatResults, parseArgs } from "./run.js";
 
 describe("parseArgs", () => {
@@ -38,6 +41,18 @@ describe("checkText", () => {
     const r = await checkText(passiveHeavy, "x.tex", { maxPassive: 0.1 });
     expect(r.failed).toBe(true);
     expect(r.violations.join(" ")).toMatch(/passive/);
+  });
+
+  it("routes .md through the Markdown extractor (case-insensitive)", async () => {
+    const src = "# Title\n\nThe **model** is clear and direct.";
+    // Control: the two extractors genuinely diverge on this input.
+    expect(extractMd(src).text).not.toContain("#");
+    expect(extractMd(src).text).not.toContain("**");
+    expect(extractTex(src).text).toContain("#"); // LaTeX leaves Markdown markup literal
+    const lower = await checkText(src, "note.md", {});
+    const upper = await checkText(src, "NOTE.MD", {});
+    expect(lower.metrics.words).toBeGreaterThan(0);
+    expect(upper.metrics.words).toBe(lower.metrics.words); // the .md match is case-insensitive
   });
 });
 

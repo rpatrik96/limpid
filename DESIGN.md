@@ -36,16 +36,18 @@ students and a public release (a web front-end reusing the same core comes later
 
 ## Architecture
 
-Five units, each one job, communicating only through `@coach/contract`:
+A handful of units, each one job, communicating only through `@coach/contract`:
 
-| Package           | Job                                                                                        | Depends on                      | Purity           |
-| ----------------- | ------------------------------------------------------------------------------------------ | ------------------------------- | ---------------- |
-| `@coach/contract` | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`)     | —                               | types only       |
-| `@coach/engine`   | deterministic metrics + findings (TS port of `research-agora/scripts/writing_verify.py`)   | contract                        | pure             |
-| `@coach/latex`    | `.tex` → extracted prose + coarse source map (`strip_latex` port)                          | contract                        | pure             |
-| `@coach/rubric`   | the canon as data: rules, 12 named patterns, section thresholds, voice guards, grade bands | contract                        | pure             |
-| `@coach/coach`    | LLM judgment (4 lenses + diagnosis + why + before/after) → `CoachReport`                   | contract, engine, latex, rubric | one LM interface |
-| `apps/extension`  | command + webview coach panel; `vscode.lm` + Claude providers; deterministic fallback      | all                             | VS Code          |
+| Package               | Job                                                                                        | Depends on               | Purity           |
+| --------------------- | ------------------------------------------------------------------------------------------ | ------------------------ | ---------------- |
+| `@coach/contract`     | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`)     | —                        | types only       |
+| `@coach/engine`       | deterministic metrics + findings (TS port of `research-agora/scripts/writing_verify.py`)   | contract                 | pure             |
+| `@coach/extract-core` | format-agnostic prose assembly + source map + section classification + span→source         | contract                 | pure             |
+| `@coach/latex`        | `.tex` → extracted prose + coarse source map (`strip_latex` port)                          | contract, extract-core   | pure             |
+| `@coach/markdown`     | `.md` → extracted prose + coarse source map; ATX/setext headings drive sectioning          | contract, extract-core   | pure             |
+| `@coach/rubric`       | the canon as data: rules, 12 named patterns, section thresholds, voice guards, grade bands | contract                 | pure             |
+| `@coach/coach`        | LLM judgment (4 lenses + diagnosis + why + before/after) → `CoachReport`                   | contract, engine, rubric | one LM interface |
+| `apps/extension`      | command + webview coach panel; `vscode.lm` + Claude providers; deterministic fallback      | all                      | VS Code          |
 
 **Data flow:** `latex.extract(tex)` → `engine.analyze(extraction.text)` → `coach.review({extraction,
 engine, rubric, audience?, model?})` → `CoachReport` → webview renders highlights + coach cards +
@@ -140,6 +142,12 @@ Key_, never settings. On any model error the host degrades to a deterministic re
   **(D)** the Learning Center — a **Learn** view pairing the named-pattern library with a
   recurring-pattern / grade-trend / metric-average panel computed by the pure `@coach/history` over
   `.limpid/history.json`. Also extracted the host-side adapters into `@coach/providers`.
+- **Shipped — Markdown.** `.md` files extract through a dedicated `@coach/markdown` engine (line-aware
+  stripping of frontmatter, fenced code, GFM tables, HTML, images, and link URLs; emphasis/links/lists/
+  blockquotes reduce to prose) with ATX/setext headings driving sectioning. The format-agnostic
+  assembler, source map, title classifier, and span→source locator were factored into a shared pure
+  `@coach/extract-core` that both `@coach/latex` and `@coach/markdown` build on; the host picks the
+  extractor by language/extension (coach view, inline diagnostics, and the CLI).
 - **Deferred — (B)** public web app, **(H)** section-aware deepening, and two tier-2 follow-ups to the
   shipped features: a precise per-character source map for inline diagnostics (tier-1 today is the
   whitespace-tolerant snippet search) and learning-center quizzes / gamification.

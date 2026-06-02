@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.11]
+
+### Added
+
+- Markdown support. `.md`/`.markdown` files now extract through a dedicated Markdown
+  engine (`@coach/markdown`) instead of the LaTeX stripper: YAML frontmatter, fenced
+  code, GFM tables, HTML, images, and link URLs are dropped, while emphasis, links,
+  inline code, lists, and blockquotes reduce to their prose. **Headings (`#`…`######`
+  and single-line setext) drive sectioning** — "Coach a section…" and the right-click
+  menu now work in Markdown, scoping to a chosen `h1`/`h2`/… and its nested
+  subsections. Inline diagnostics and the `limpid` CLI gate pick the extractor by file
+  type too.
+
+### Changed
+
+- Factored the format-agnostic extraction core — prose assembly, the coarse source
+  map, section classification, and span→source location — into a new pure package
+  `@coach/extract-core`, shared by `@coach/latex` and `@coach/markdown`. LaTeX
+  extraction behaviour is unchanged.
+
 ## [0.0.10]
 
 ### Added

@@ -10,7 +10,9 @@ export default defineConfig({
     alias: {
       "@coach/contract": r("packages/contract/src/index.ts"),
       "@coach/engine": r("packages/engine/src/index.ts"),
+      "@coach/extract-core": r("packages/extract-core/src/index.ts"),
       "@coach/latex": r("packages/latex/src/index.ts"),
+      "@coach/markdown": r("packages/markdown/src/index.ts"),
       "@coach/rubric": r("packages/rubric/src/index.ts"),
       "@coach/providers": r("packages/providers/src/index.ts"),
       "@coach/history": r("packages/history/src/index.ts"),

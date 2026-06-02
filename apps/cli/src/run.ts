@@ -4,8 +4,14 @@
  */
 import { createCoach } from "@coach/coach";
 import { defaultRubric, rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
-import { extract } from "@coach/latex";
+import { extract as extractTex } from "@coach/latex";
+import { extract as extractMd } from "@coach/markdown";
 import { analyze } from "@coach/engine";
+
+/** Markdown files extract via @coach/markdown (headings drive sectioning); else LaTeX. */
+function extractorFor(file: string): typeof extractTex {
+  return /\.(md|markdown|mdx|qmd|rmd)$/i.test(file) ? extractMd : extractTex;
+}
 
 export interface Thresholds {
   maxPassive?: number;
@@ -86,7 +92,7 @@ export async function checkText(
   t: Thresholds,
   register: Register = "paper",
 ): Promise<FileResult> {
-  const extraction = extract(text);
+  const extraction = extractorFor(file)(text);
   const engine = analyze(extraction.text);
   const rubric = rubricForRegister(register, defaultRubric);
   const report = await createCoach().review({ extraction, engine, rubric });

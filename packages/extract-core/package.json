@@ -1,5 +1,5 @@
 {
-  "name": "@coach/latex",
+  "name": "@coach/extract-core",
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -7,12 +7,12 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "description": "Format-agnostic extraction core shared by @coach/latex and @coach/markdown: prose assembly, source-map, section classification, and span-to-source location.",
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@coach/contract": "*",
-    "@coach/extract-core": "*"
+    "@coach/contract": "*"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

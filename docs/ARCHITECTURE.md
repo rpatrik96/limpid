@@ -26,28 +26,32 @@ Everything communicates through `@coach/contract`. Import the contract; never re
 
 ## Packages
 
-| Package            | Job                                                                                                                                                                                                                                              | Purity                           |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
-| `@coach/contract`  | Shared types — `CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`. Everything imports it; nothing else depends on the others through anything but this.                                                                     | types only                       |
-| `@coach/engine`    | Deterministic metrics and findings — filler, Flesch–Kincaid grade, sentence-length variance, passive voice, hedges, adverbs, acronyms. Runs in milliseconds. `analyze(text) → EngineResult`.                                                     | pure                             |
-| `@coach/latex`     | `.tex` → extracted prose plus a coarse source map and per-section split. `extract(tex) → Extraction`. Spans are offsets into the _extracted_ prose, never the raw `.tex`.                                                                        | pure                             |
-| `@coach/rubric`    | The canon as data — rules, the named failure patterns, section thresholds, voice guards, grade bands. Also the editable-rules surface (`runDetector`, `parseUserRules`, `mergeRubric`).                                                          | pure                             |
-| `@coach/coach`     | LLM judgment — the four lenses, named-pattern diagnosis, _why_ + before/after, scoring — assembled into a `CoachReport`. Talks to a model only through the `LanguageModel` contract interface; ships a mock model and a golden-set eval harness. | pure (one LM interface)          |
-| `@coach/providers` | Host adapters behind `LanguageModel` — an OpenAI-compatible HTTP adapter (OpenAI / OpenRouter / Groq / Together / Mistral), an Anthropic adapter, and a CLI adapter (`claude -p`, Ollama). Per-provider JSON-mode flags.                         | host (`fetch` / `child_process`) |
-| `apps/extension`   | The VS Code extension (publisher `rpatrik96`, name `limpid`). Activity-Bar "Coach" view, command + webview panel, Copilot via the `vscode.lm` API, SecretStorage keys, save-triggered re-analysis.                                               | VS Code host                     |
-| `apps/cli`         | The `limpid` CLI — a deterministic gate for CI and pre-commit, with an example GitHub Action.                                                                                                                                                    | Node host                        |
+| Package               | Job                                                                                                                                                                                                                                              | Purity                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `@coach/contract`     | Shared types — `CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`. Everything imports it; nothing else depends on the others through anything but this.                                                                     | types only                       |
+| `@coach/engine`       | Deterministic metrics and findings — filler, Flesch–Kincaid grade, sentence-length variance, passive voice, hedges, adverbs, acronyms. Runs in milliseconds. `analyze(text) → EngineResult`.                                                     | pure                             |
+| `@coach/extract-core` | The format-agnostic extraction core — prose assembly, the coarse source map, section classification (`classifyTitle`), and `locateSpanInSource`. Each concrete extractor supplies preprocessed lines, markers, and a per-line `transformInline`. | pure                             |
+| `@coach/latex`        | `.tex` → extracted prose plus a coarse source map and per-section split. `extract(tex) → Extraction`. Spans are offsets into the _extracted_ prose, never the raw `.tex`.                                                                        | pure                             |
+| `@coach/markdown`     | `.md` → extracted prose plus a coarse source map; ATX (`#`…`######`) and setext headings drive sectioning. Same `extract`/`findSourceSections` shape as `@coach/latex`. Builds on `@coach/extract-core`.                                         | pure                             |
+| `@coach/rubric`       | The canon as data — rules, the named failure patterns, section thresholds, voice guards, grade bands. Also the editable-rules surface (`runDetector`, `parseUserRules`, `mergeRubric`).                                                          | pure                             |
+| `@coach/coach`        | LLM judgment — the four lenses, named-pattern diagnosis, _why_ + before/after, scoring — assembled into a `CoachReport`. Talks to a model only through the `LanguageModel` contract interface; ships a mock model and a golden-set eval harness. | pure (one LM interface)          |
+| `@coach/providers`    | Host adapters behind `LanguageModel` — an OpenAI-compatible HTTP adapter (OpenAI / OpenRouter / Groq / Together / Mistral), an Anthropic adapter, and a CLI adapter (`claude -p`, Ollama). Per-provider JSON-mode flags.                         | host (`fetch` / `child_process`) |
+| `apps/extension`      | The VS Code extension (publisher `rpatrik96`, name `limpid`). Activity-Bar "Coach" view, command + webview panel, Copilot via the `vscode.lm` API, SecretStorage keys, save-triggered re-analysis.                                               | VS Code host                     |
+| `apps/cli`            | The `limpid` CLI — a deterministic gate for CI and pre-commit, with an example GitHub Action.                                                                                                                                                    | Node host                        |
 
 ## Data flow
 
 ```
-latex.extract(tex)                  →  Extraction      (prose + source map + sections)
+extract(source)                     →  Extraction      (prose + source map + sections)
+  ·  latex.extract for .tex          (the host picks the extractor by language/extension;
+  ·  markdown.extract for .md         both implement the contract's ExtractFn)
 engine.analyze(extraction.text)     →  EngineResult    (deterministic metrics + findings)
 coach.review({ extraction, engine,  →  CoachReport     (lenses + diagnosis + grade + altitude)
                rubric, audience?, model? })
 CoachReport                         →  webview / CLI exit code
 ```
 
-The extractor turns a `.tex` file into clean prose plus a coarse source map. The engine scores that
+The extractor turns a `.tex` or `.md` file into clean prose plus a coarse source map. The engine scores that
 prose deterministically. The coach takes the extraction, the engine result, and the rubric, optionally
 calls a `LanguageModel`, and emits a `CoachReport`. The front-end renders it — the extension paints
 highlights, coach cards, a grade with dimension bars, and an altitude banner; the CLI turns it into a
@@ -81,12 +85,14 @@ the host degrades to a deterministic report.
 
 Tests run on the TypeScript source with **no build step**. Each package's `package.json` points `main`,
 `types`, and `exports` at `./src/index.ts`, so vitest and the bundler consume source directly; `npm test`
-runs the full suite (226 tests) across the workspaces.
+runs the full suite (282 tests) across the workspaces.
 
 - **engine** — golden-case unit tests per check, including the false-positive tails (copular "is
   important" is not passive; "optimization" / "distribution" are terms of art, not zombie nouns; the
   `-ly` adverb stoplist).
+- **extract-core** — the shared assembler, source-map monotonicity, title classification, and span→source location.
 - **latex** — fixture `.tex` → expected prose and prose ratio.
+- **markdown** — fixture `.md` → stripped prose (frontmatter / code / tables / links dropped) and ATX/setext sectioning.
 - **rubric** — schema validation and rule-firing tests, plus the editable-rules detector.
 - **coach** — contract tests against the mock `LanguageModel` and recorded fixtures; the
   deterministic-only path is tested with no model. The golden-set eval (`npm run eval`) scores a real

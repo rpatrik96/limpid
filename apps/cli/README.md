@@ -2,7 +2,8 @@
 
 Deterministic writing checks for CI / pre-commit gates — no LLM, no secrets. It
 runs the same mechanical pipeline as the extension (extract → analyze → score) and
-exits non-zero when a threshold is violated.
+exits non-zero when a threshold is violated. It scores `.tex` and `.md` files,
+picking the LaTeX or Markdown extractor by file extension.
 
 ## Build & run
 

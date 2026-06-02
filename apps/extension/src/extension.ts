@@ -13,8 +13,13 @@
  */
 import * as vscode from "vscode";
 
-import type { CoachInput, CoachReport, Extraction, LanguageModel } from "@coach/contract";
-import { extract, findSourceSections } from "@coach/latex";
+import type {
+  CoachInput,
+  CoachReport,
+  ExtractFn,
+  Extraction,
+  LanguageModel,
+} from "@coach/contract";
 import { analyze } from "@coach/engine";
 import { createCoach } from "@coach/coach";
 import { rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
@@ -25,6 +30,7 @@ import { setApiKeyCommand, clearApiKeyCommand } from "./secrets.js";
 import { loadRubric, editRulesCommand, testRuleCommand } from "./rules.js";
 import { registerDiagnostics } from "./diagnostics.js";
 import { registerLearnView, recordRun } from "./learn.js";
+import { formatFor, type DocFormat } from "./format.js";
 
 const COMMAND_ID = "limpid.coach";
 const VIEW_TYPE = "limpid.coachView";
@@ -104,17 +110,19 @@ async function coachSectionCommand(): Promise<void> {
     return;
   }
   const doc = editor.document;
-  const sections = findSourceSections(doc.getText());
+  const fmt = formatFor(doc);
+  const sections = fmt.findSourceSections(doc.getText());
   if (sections.length === 0) {
-    void vscode.window.showInformationMessage(
-      "Limpid: no \\section/\\subsection found in this file.",
-    );
+    void vscode.window.showInformationMessage(`Limpid: no ${fmt.sectionNoun} found in this file.`);
     return;
   }
 
+  // Indent each entry relative to the shallowest heading present, so both LaTeX
+  // (section=2) and Markdown (h1=1) nest from a flush-left top level.
+  const minLevel = Math.min(...sections.map((s) => s.level));
   const pick = await vscode.window.showQuickPick(
     sections.map((s, index) => ({
-      label: `${"  ".repeat(Math.max(0, s.level - 2))}${s.title || s.command}`,
+      label: `${"  ".repeat(Math.max(0, s.level - minLevel))}${s.title || s.command}`,
       description: s.command,
       index,
       title: s.title,
@@ -142,7 +150,7 @@ async function onSave(doc: vscode.TextDocument): Promise<void> {
 // ── Core: resolve scope → text → review → view ───────────────────────────────
 
 /** Extract the text the scope refers to from the (current) document. */
-function textForScope(doc: vscode.TextDocument, scope: Scope): string {
+function textForScope(doc: vscode.TextDocument, scope: Scope, fmt: DocFormat): string {
   if (scope.kind === "document") return doc.getText();
 
   if (scope.kind === "selection") {
@@ -154,7 +162,7 @@ function textForScope(doc: vscode.TextDocument, scope: Scope): string {
 
   // section — re-find against the current text (it may have shifted since the pick).
   const full = doc.getText();
-  const sections = findSourceSections(full);
+  const sections = fmt.findSourceSections(full);
   let sec = sections[scope.index];
   if (!sec || sec.title !== scope.title) sec = sections.find((s) => s.title === scope.title);
   return sec ? full.slice(sec.start, sec.end) : full;
@@ -166,7 +174,8 @@ interface ShowOpts {
 }
 
 async function coachAndShow(doc: vscode.TextDocument, scope: Scope, opts: ShowOpts): Promise<void> {
-  const text = textForScope(doc, scope);
+  const fmt = formatFor(doc);
+  const text = textForScope(doc, scope, fmt);
   if (text.trim().length === 0) {
     void vscode.window.showWarningMessage("Limpid: nothing to coach (empty selection).");
     return;
@@ -176,7 +185,7 @@ async function coachAndShow(doc: vscode.TextDocument, scope: Scope, opts: ShowOp
     session?.docUri.toString() === doc.uri.toString() ? session.audience : configString("audience");
   const previous = lastReportByDoc.get(doc.uri.toString());
 
-  let report = await runReview(text, doc.fileName, audience, previous);
+  let report = await runReview(text, doc.fileName, audience, previous, fmt.extract);
   if (scope.kind === "section" && scope.title) {
     report = { ...report, target: { ...report.target, section: scope.title } };
   }
@@ -205,15 +214,16 @@ function resolveRegister(fileName: string): Register {
 
 /** The documented pipeline (extract → analyze → review), with a status-bar spinner. */
 async function runReview(
-  tex: string,
+  text: string,
   fileName: string,
   audience: string | undefined,
   previous: CoachReport | undefined,
+  extract: ExtractFn,
 ): Promise<CoachReport> {
   return vscode.window.withProgress(
     { location: vscode.ProgressLocation.Window, title: "Limpid: analyzing…" },
     async () => {
-      const extraction: Extraction = extract(tex);
+      const extraction: Extraction = extract(text);
       const engine = analyze(extraction.text);
       const loaded = await loadRubric();
       if (loaded.errors.length) {

@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-243-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-282-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -14,8 +14,10 @@ it **teaches _why_** a passage fails: it names the failure pattern, explains the
 cognitive reason, and shows a before/after. It runs locally; your drafts never
 leave your machine.
 
-It is built for LaTeX (and plain prose): point it at a `.tex` selection and it
-strips the markup, scores four dimensions, and coaches it.
+It is built for LaTeX and Markdown (and plain prose): point it at a `.tex` or
+`.md` selection and it strips the markup, scores four dimensions, and coaches it.
+In Markdown, headings (`#`…`######`) drive sectioning the way `\section` does in
+LaTeX.
 
 ## Contents
 
@@ -79,8 +81,8 @@ over time). Trigger an analysis from the Coach view, or:
 - **right-click** a selection → _Limpid: Coach this selection / section_,
 - press **⌘⌥L / Ctrl+Alt+L** (coaches the selection, or the whole file if nothing
   is selected),
-- run **Limpid: Coach a section…** to pick a `\section`/`\subsection`/… and coach
-  just that (it includes nested subsections),
+- run **Limpid: Coach a section…** to pick a `\section`/`\subsection`/… (or, in
+  Markdown, an `#`/`##`/… heading) and coach just that (nested subsections included),
 - or click **Coach selection** / **Coach section…** in the view itself.
 
 Whatever you coached is remembered, so **saving the file re-runs the same scope**
@@ -172,7 +174,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 243 vitest tests across core + extension
+npm test            # 282 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses
@@ -183,21 +185,24 @@ Requires **Node 22**. Other root scripts: `test:watch`, `lint` / `lint:fix`,
 
 ## Project layout
 
-TypeScript monorepo, npm workspaces, ESM throughout. `@coach/{contract,engine,latex,rubric,history}`
-are pure (no `vscode`, network, or `fs`); the host concerns live in the providers
-package and the two apps.
+TypeScript monorepo, npm workspaces, ESM throughout.
+`@coach/{contract,engine,extract-core,latex,markdown,rubric,history}` are pure (no
+`vscode`, network, or `fs`); the host concerns live in the providers package and the
+two apps.
 
-| Workspace            | Job                                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/contract`  | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`) — pure                    |
-| `packages/engine`    | deterministic metrics + findings — pure                                                                          |
-| `packages/latex`     | `.tex` → extracted prose + coarse source map — pure                                                              |
-| `packages/rubric`    | the canon as data: rules, named patterns, thresholds, voice guards — pure                                        |
-| `packages/coach`     | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness                              |
-| `packages/providers` | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + CLI |
-| `packages/history`   | pure aggregation of coaching runs over time (recurring patterns, grade trend, metric averages) — pure            |
-| `apps/extension`     | the VS Code extension: Coach + Learn webviews, inline `.tex` diagnostics, Copilot adapter, SecretStorage keys    |
-| `apps/cli`           | the `limpid` deterministic gate (`apps/cli/dist/cli.js`)                                                         |
+| Workspace               | Job                                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/contract`     | shared types (`CoachReport`, `Finding`, `Extraction`, `RubricConfig`, `LanguageModel`) — pure                    |
+| `packages/engine`       | deterministic metrics + findings — pure                                                                          |
+| `packages/extract-core` | format-agnostic extraction core: prose assembly, source map, section classification, span→source — pure          |
+| `packages/latex`        | `.tex` → extracted prose + coarse source map — pure                                                              |
+| `packages/markdown`     | `.md` → extracted prose + coarse source map; headings drive sectioning — pure                                    |
+| `packages/rubric`       | the canon as data: rules, named patterns, thresholds, voice guards — pure                                        |
+| `packages/coach`        | LLM judgment (4 lenses + diagnosis) → `CoachReport`; the `eval/` golden-set harness                              |
+| `packages/providers`    | host-side `LanguageModel` adapters (OpenAI-compatible, Anthropic, Claude-Code-CLI) shared by the extension + CLI |
+| `packages/history`      | pure aggregation of coaching runs over time (recurring patterns, grade trend, metric averages) — pure            |
+| `apps/extension`        | the VS Code extension: Coach + Learn webviews, inline `.tex`/`.md` diagnostics, Copilot adapter, SecretStorage   |
+| `apps/cli`              | the `limpid` deterministic gate (`apps/cli/dist/cli.js`)                                                         |
 
 ## Architecture
 
@@ -213,9 +218,12 @@ reveal-in-editor) work end-to-end; the LLM lenses are implemented and unit-teste
 against a mock model, and wired in the host to Copilot, the Claude Code CLI,
 Ollama, and the API providers (Anthropic / OpenAI / OpenRouter / Groq / Together /
 Mistral) with SecretStorage-backed keys and graceful deterministic fallback.
-Beyond the core: editable rules + a rule playground (`.limpid/rules.json`), the
-`limpid` CLI gate, multi-register coaching, inline `.tex` diagnostics, and the
-**Learn** view (pattern library + trends over time) all ship. Inline diagnostics
+It handles both LaTeX and Markdown — `.md` files extract through a dedicated
+Markdown engine (frontmatter, fenced code, tables, and link URLs dropped; headings
+drive sectioning) rather than the LaTeX stripper. Beyond the core: editable rules +
+a rule playground (`.limpid/rules.json`), the `limpid` CLI gate, multi-register
+coaching, inline `.tex`/`.md` diagnostics, and the **Learn** view (pattern library +
+trends over time) all ship. Inline diagnostics
 map findings back to source with a whitespace-tolerant snippet search — verbatim
 accurate, with a precise per-character source map still to come; the Learn view's
 recurring-pattern insight populates from the LLM-diagnosed patterns (the grade and

@@ -1,52 +1,12 @@
 /**
- * Map a sectioning title (or the abstract environment) to a {@link SectionKind}.
- *
- * Ported in spirit from the `SECTION_PATTERNS` table in
- * `research-agora/scripts/writing_verify.py`, generalized to the contract's kinds.
+ * Locate sectioning units (`\part`…`\subparagraph` and the abstract environment) in
+ * raw `.tex`, with SOURCE offsets — powering "Coach a section…". Title classification
+ * and the shared {@link SourceSection} shape live in `@coach/extract-core`.
  */
-import type { SectionKind } from "@coach/contract";
+import { classifyTitle, type SourceSection } from "@coach/extract-core";
 
-/** Ordered (regex → kind); first match wins so "related work" beats "work". */
-const TITLE_RULES: { re: RegExp; kind: SectionKind }[] = [
-  { re: /\brelated\s+work\b|\bprior\s+work\b|\bbackground\b|\bliterature\b/i, kind: "related" },
-  { re: /\bintroduction\b|\bintro\b/i, kind: "introduction" },
-  {
-    re: /\bmethod(?:s|ology)?\b|\bapproach\b|\bmodel\b|\barchitecture\b|\bframework\b|\bpreliminaries\b|\bsetup\b/i,
-    kind: "methods",
-  },
-  {
-    re: /\bresult(?:s)?\b|\bexperiment(?:s|al)?\b|\bevaluation\b|\bablation(?:s)?\b|\bempirical\b/i,
-    kind: "results",
-  },
-  {
-    re: /\bdiscussion\b|\bconclusion(?:s)?\b|\blimitation(?:s)?\b|\bfuture\s+work\b|\bbroader\s+impact\b/i,
-    kind: "discussion",
-  },
-  { re: /\bproof\b|\bderivation\b|\blemma\b|\btheorem\b|\bappendix\b/i, kind: "proof" },
-  { re: /\babstract\b/i, kind: "abstract" },
-];
-
-/** Classify a (already markup-stripped) section title into a SectionKind. */
-export function classifyTitle(title: string): SectionKind {
-  for (const { re, kind } of TITLE_RULES) {
-    if (re.test(title)) return kind;
-  }
-  return "unknown";
-}
-
-/** A sectioning unit located in the RAW .tex source (offsets index into it). */
-export interface SourceSection {
-  title: string;
-  kind: SectionKind;
-  /** sectioning command, e.g. "section", "subsection", "abstract". */
-  command: string;
-  /** nesting depth: part 0 … subparagraph 6 (abstract treated as 2). */
-  level: number;
-  /** source offset of the heading (or `\begin{abstract}`). */
-  start: number;
-  /** source offset where the unit ends (exclusive). */
-  end: number;
-}
+export { classifyTitle };
+export type { SourceSection };
 
 const LEVELS: Record<string, number> = {
   part: 0,

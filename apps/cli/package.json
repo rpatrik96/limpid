@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "limpid CLI — deterministic writing checks for CI / pre-commit gates on .tex (and prose).",
+  "description": "limpid CLI — deterministic writing checks for CI / pre-commit gates on .tex / .md (and prose).",
   "bin": {
     "limpid": "./dist/cli.js"
   },
@@ -17,6 +17,7 @@
     "@coach/contract": "*",
     "@coach/engine": "*",
     "@coach/latex": "*",
+    "@coach/markdown": "*",
     "@coach/rubric": "*"
   },
   "devDependencies": {

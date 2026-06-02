@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
@@ -166,7 +166,7 @@
         },
         {
           "command": "limpid.coachSection",
-          "when": "editorTextFocus && resourceLangId == latex",
+          "when": "editorTextFocus && (resourceLangId == latex || resourceLangId == tex || resourceLangId == markdown || resourceLangId == mdx || resourceLangId == quarto || resourceLangId == rmd || resourceExtname == .md || resourceExtname == .markdown || resourceExtname == .mdx || resourceExtname == .qmd || resourceExtname == .rmd)",
           "group": "1_modification@100"
         }
       ]
@@ -218,8 +218,10 @@
     "@coach/coach": "*",
     "@coach/contract": "*",
     "@coach/engine": "*",
+    "@coach/extract-core": "*",
     "@coach/history": "*",
     "@coach/latex": "*",
+    "@coach/markdown": "*",
     "@coach/providers": "*",
     "@coach/rubric": "*"
   },

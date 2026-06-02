@@ -11,13 +11,17 @@
 import * as vscode from "vscode";
 
 import type { Finding } from "@coach/contract";
-import { extract, locateSpanInSource } from "@coach/latex";
+import { locateSpanInSource } from "@coach/latex";
 import { analyze } from "@coach/engine";
 import { defaultRubric } from "@coach/rubric";
 
+import { formatFor, isMarkdown, MARKDOWN_LANGS } from "./format.js";
+
 const SOURCE = "Limpid";
-const LANGS = ["latex", "tex", "markdown", "plaintext"];
-const LANG_SET = new Set(LANGS);
+const LATEX_LANGS = new Set(["latex", "tex", "plaintext"]);
+// Languages the hover / code-action selector registers for: LaTeX + plaintext + every
+// Markdown variant that `format.ts` routes to the Markdown extractor.
+const LANGS = [...LATEX_LANGS, ...MARKDOWN_LANGS];
 
 /** ruleId → rationale, for hover text. */
 const RATIONALE = new Map(defaultRubric.rules.map((r) => [r.id, r.rationale]));
@@ -29,7 +33,7 @@ function diagnosticsEnabled(): boolean {
 }
 
 function relevant(doc: vscode.TextDocument): boolean {
-  return doc.uri.scheme === "file" && LANG_SET.has(doc.languageId);
+  return doc.uri.scheme === "file" && (isMarkdown(doc) || LATEX_LANGS.has(doc.languageId));
 }
 
 function severityOf(s: Finding["severity"]): vscode.DiagnosticSeverity {
@@ -54,7 +58,7 @@ function refresh(doc: vscode.TextDocument): void {
   }
 
   const source = doc.getText();
-  const extraction = extract(source);
+  const extraction = formatFor(doc).extract(source);
   const { findings } = analyze(extraction.text);
 
   const diags: vscode.Diagnostic[] = [];

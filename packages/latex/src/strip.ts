@@ -11,6 +11,7 @@
  * from), then apply inline transforms line-by-line. This keeps `sourceLine` exact for
  * every retained newline without an exact char-level map.
  */
+import type { SourceLine } from "@coach/extract-core";
 
 /** Environments whose entire body is dropped (replaced by a blank line). */
 const DROP_ENVS = [
@@ -39,11 +40,7 @@ const DROP_ENVS = [
 ] as const;
 
 /** A physical line carried through stripping with its 1-based original line number. */
-export interface SourceLine {
-  text: string;
-  /** 1-based line number in the original .tex this content came from. */
-  sourceLine: number;
-}
+export type { SourceLine };
 
 const DROP_ENV_SET = new Set<string>(DROP_ENVS);
 

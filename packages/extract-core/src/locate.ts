@@ -1,10 +1,12 @@
 /**
- * Best-effort map of an extracted-prose span back to a range in the raw `.tex`
- * source — for inline editor diagnostics. The extractor normalizes whitespace and
- * drops markup, so an exact offset doesn't survive; instead we anchor on the
- * coarse per-line source map and then match the snippet whitespace-tolerantly
- * (the source may wrap/indent differently). Returns `null` when the snippet can't
- * be located (e.g. it was a stripped placeholder) — the caller skips that finding.
+ * Best-effort map of an extracted-prose span back to a range in the raw source —
+ * for inline editor diagnostics. Format-agnostic: it depends only on the
+ * {@link Extraction}'s coarse per-line source map, so it works for any extractor
+ * (LaTeX or Markdown). The extractor normalizes whitespace and drops markup, so an
+ * exact offset doesn't survive; instead we anchor on the source map and then match
+ * the snippet whitespace-tolerantly (the source may wrap/indent differently).
+ * Returns `null` when the snippet can't be located (e.g. it was a stripped
+ * placeholder) — the caller skips that finding.
  *
  * Pure: no `vscode`, no I/O.
  */
