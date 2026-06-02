@@ -381,7 +381,9 @@ const MARKUP_RE = /[\\{}$%&#^_~`<>|]|!\[|\]\(/;
 async function applyFix(s: Session, index: number): Promise<void> {
   const finding = s.report.findings[index];
   const after = finding?.after;
-  if (!finding || after === undefined) return;
+  // Only LLM findings carry a span-specific rewrite; a detector rule's before/after
+  // is a generic illustration, so refuse to splice it over the match.
+  if (!finding || after === undefined || finding.method !== "llm") return;
 
   let doc: vscode.TextDocument;
   try {

@@ -128,9 +128,11 @@ function renderCard(f: Finding, index: number): string {
     f.spans.length > 0
       ? `<button class="reveal" data-finding="${index}" title="Reveal in editor">reveal</button>`
       : "";
-  // "apply fix" only when there's a concrete rewrite AND a span to anchor it to.
+  // "apply fix" only for an LLM finding's span-specific rewrite. Detector-rule
+  // findings carry a GENERIC illustrative before/after (teaching only), so applying
+  // it would splice a stock sentence over the matched span — show it, don't apply it.
   const apply =
-    f.after !== undefined && f.spans.length > 0
+    f.method === "llm" && f.after !== undefined && f.spans.length > 0
       ? `<button class="apply" data-apply="${index}" title="Apply the rewrite to the editor">apply fix</button>`
       : "";
   const parts: string[] = [];

@@ -148,6 +148,13 @@ Key_, never settings. On any model error the host degrades to a deterministic re
   assembler, source map, title classifier, and span→source locator were factored into a shared pure
   `@coach/extract-core` that both `@coach/latex` and `@coach/markdown` build on; the host picks the
   extractor by language/extension (coach view, inline diagnostics, and the CLI).
+- **Shipped — citation & cross-reference voice.** Three heuristic rubric rules over the extracted
+  `[ref]` token (every `\cite`/`\citet`/`\citep` and `\ref`/`\cref`/`\eqref` collapses to it):
+  citation-as-subject ("[ref] shows that…"), citation pile-up (≥3 stacked refs), and weak reference
+  opener ("As shown in [ref], …"). They ride the editable-rules pipeline — `runRubricDetectors` runs
+  every non-built-in detector rule in `coach.review`, so these surface as Coach cards and in the CLI
+  gate, graded as low-severity suggestions. They carry a generic teaching before/after but **no
+  apply-fix** (that's gated to the LLM lenses' span-specific rewrites).
 - **Deferred — (B)** public web app, **(H)** section-aware deepening, and two tier-2 follow-ups to the
   shipped features: a precise per-character source map for inline diagnostics (tier-1 today is the
   whitespace-tolerant snippet search) and learning-center quizzes / gamification.

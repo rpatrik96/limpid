@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.13]
+
+### Added
+
+- **Citation & cross-reference voice checks** — three heuristic rules over the
+  extracted `[ref]` token (which every `\cite`/`\citet`/`\citep` and
+  `\ref`/`\cref`/`\eqref` collapses to): **citation-as-subject** ("[ref] shows that…"
+  → lead with the claim, cite it), **citation pile-up** (≥3 stacked references), and
+  **weak reference opener** ("As shown in [ref], …" → lead with what's true, then
+  point). They surface as low-severity Coach cards and in the `limpid` CLI gate, and
+  respect editable rules. The deepest fit for the LaTeX audience — the one fault class
+  the coach was previously blind to.
+
+### Fixed
+
+- Apply-fix is now offered only on the LLM lenses' span-specific rewrites. A
+  detector-backed rule's before/after is a generic illustration, so applying it would
+  have spliced a stock sentence over the matched span — the button is gone for those
+  (the teaching before/after still shows on the card).
+
 ## [0.0.12]
 
 ### Added

@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-360-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-368-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -112,6 +112,10 @@ Toggle save-refresh with `limpid.reanalyzeOnSave`.
 - **Protects your voice:** it will not punish em-dashes, colon-payoffs, or long
   sentences that resolve cleanly — the test is the Economist's "must it be read
   twice?", not raw length. Scope-hedging is a virtue; conviction-hedging is a fault.
+- **Citations & cross-refs:** flags author-prominent framing (_"[ref] shows that…"_ →
+  lead with the claim, cite it), citation pile-ups (three-plus stacked refs), and
+  reference openers (_"As shown in [ref], …"_ → state it, then point) — over every
+  `\cite`/`\citet` and `\ref`/`\cref`. Suggestions, not errors.
 - **Inline diagnostics:** the deterministic checks also surface as editor
   squiggles + Problems-panel entries in the `.tex` (refreshed on open/save), each
   with a hover explaining the rule and a "Coach this in Limpid" quick-fix. The LLM
@@ -187,7 +191,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 360 vitest tests across core + extension
+npm test            # 368 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses

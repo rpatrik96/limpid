@@ -538,4 +538,78 @@ export const rules: Rule[] = [
       },
     ],
   },
+
+  // ── Citation & cross-reference voice ──────────────────────────────────────
+  // The extractor collapses every \cite/\citet/\citep AND \ref/\cref/\eqref into a
+  // single "[ref]" token; these heuristic rules read that token. They are nudges
+  // (severity: suggestion) and teach via the rationale — the before/after is a
+  // GENERIC illustration, so the Coach view shows it but offers no "apply fix"
+  // (that's reserved for the LLM lenses' span-specific rewrites).
+  {
+    id: "citation.as-subject",
+    name: "Citation as subject",
+    category: "precision",
+    source:
+      "Swales & Feak, Academic Writing for Graduate Students — integral vs. non-integral citation",
+    method: "heuristic",
+    severity: "suggestion",
+    rationale:
+      'A citation as the grammatical subject ("[ref] shows that X") foregrounds who said it over what was found. Lead with the claim and cite it — "X holds [ref]" — and keep the author-prominent form for when the attribution itself is the point (a contrast, or a disputed claim).',
+    detector: {
+      kind: "regex",
+      pattern:
+        "\\[ref\\]\\s+(?:shows?|argues?|demonstrates?|proposes?|claims?|finds?|reports?|observes?|notes?|suggests?|introduces?|presents?|establishes?|proves?|assumes?)\\b",
+      flags: "gi",
+    },
+    examples: [
+      {
+        before: "[ref] shows that deeper networks generalize better.",
+        after: "Deeper networks generalize better [ref].",
+      },
+    ],
+  },
+  {
+    id: "citation.pile-up",
+    name: "Citation pile-up",
+    category: "clarity",
+    source: "Limpid house style — readability of dense citation",
+    method: "heuristic",
+    severity: "suggestion",
+    rationale:
+      "Three or more references stacked on one point ([ref] [ref] [ref]) make the reader wade through a wall of citations before reaching the idea. Fold them into one grouped citation, or attribute only the one or two that carry the claim.",
+    detector: {
+      kind: "regex",
+      pattern: "\\[ref\\](?:[\\s,;]+\\[ref\\]){2,}",
+      flags: "gi",
+    },
+    examples: [
+      {
+        before: "This holds across architectures [ref] [ref] [ref] [ref].",
+        after: "This holds across architectures [ref].",
+      },
+    ],
+  },
+  {
+    id: "citation.weak-opener",
+    name: "Weak reference opener",
+    category: "flow",
+    source:
+      "Swales & Feak, Academic Writing for Graduate Students (sentence-initial citation); Gopen & Swan, topic position",
+    method: "heuristic",
+    severity: "suggestion",
+    rationale:
+      'Opening a sentence by pointing at a reference or figure ("As shown in [ref], …") makes the pointer the subject and pushes the claim out of the topic position. Lead with what is true, then point: "X converges [ref] (Fig. 3)."',
+    detector: {
+      kind: "regex",
+      pattern:
+        "(?:^|(?<=[.!?]\\s)|(?<=\\n))(?:as\\s+shown\\s+in|as\\s+demonstrated\\s+in|as\\s+discussed\\s+in|as\\s+seen\\s+in|as\\s+reported\\s+in|according\\s+to|following|per)\\s+\\[ref\\]",
+      flags: "gi",
+    },
+    examples: [
+      {
+        before: "As shown in [ref], the loss decreases monotonically.",
+        after: "The loss decreases monotonically [ref].",
+      },
+    ],
+  },
 ];

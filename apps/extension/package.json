@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why. Not a grammar/spell checker.",

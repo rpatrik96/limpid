@@ -97,6 +97,30 @@ describe("coach.review — user-added rubric rules feed the pipeline (finding 1)
   });
 });
 
+describe("citation & cross-reference rules fire via the default rubric (feature #2)", () => {
+  test("runRubricDetectors flags citation-as-subject, pile-up, and weak opener", () => {
+    const text =
+      "[ref] shows that X. The loss [ref] [ref] [ref] holds.\nAs shown in [ref], it works.";
+    const ids = new Set(runRubricDetectors(defaultRubric, text).map((f) => f.ruleId));
+    expect(ids.has("citation.as-subject")).toBe(true);
+    expect(ids.has("citation.pile-up")).toBe(true);
+    expect(ids.has("citation.weak-opener")).toBe(true);
+  });
+
+  test("a citation-as-subject finding reaches coach.review as a non-LLM suggestion", async () => {
+    const extraction = {
+      ...buildFixture(SAMPLE_TEX).extraction,
+      text: "[ref] shows that the bound is tight.",
+    };
+    const engine = analyze(extraction.text);
+    const report = await createCoach().review({ extraction, engine, rubric: defaultRubric });
+    const f = report.findings.find((x) => x.ruleId === "citation.as-subject");
+    expect(f).toBeDefined();
+    expect(f?.method).not.toBe("llm"); // deterministic detector → no apply-fix button
+    expect(f?.severity).toBe("suggestion");
+  });
+});
+
 describe("engine ↔ rubric id reconciliation (finding 4)", () => {
   // Text engineered to exercise ALL SIX built-in engine checks at once:
   // weak opener, undefined acronym, passive, filler phrase, filler word, adverb
