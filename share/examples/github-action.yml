@@ -1,0 +1,17 @@
+# Limpid writing gate — copy into .github/workflows/ in your paper repo.
+# Deterministic; no API key needed. Adjust the CLI path, the globbed files, and the
+# thresholds. Here the bundle is vendored at ./limpid/ in the repo; if you instead
+# `npm install` Limpid from source, call apps/cli/dist/cli.js.
+name: writing
+on: [push, pull_request]
+
+jobs:
+  limpid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Limpid writing gate
+        run: node ./limpid/cli/limpid.js --max-passive 0.4 --min-grade C main.tex sections/*.tex

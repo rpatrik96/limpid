@@ -1,0 +1,36 @@
+{
+  "rules": [
+    {
+      "id": "house.no-placeholder",
+      "name": "No leftover placeholder",
+      "category": "clarity",
+      "source": "house style",
+      "method": "deterministic",
+      "severity": "warning",
+      "rationale": "Placeholders (TODO, FIXME, foobar, lorem ipsum) must never survive into a shared draft — they signal an unfinished thought.",
+      "detector": { "kind": "words", "words": ["TODO", "FIXME", "foobar", "lorem", "ipsum"] },
+      "examples": [
+        {
+          "before": "We evaluate on TODO datasets.",
+          "after": "We evaluate on CIFAR-10 and ImageNet."
+        }
+      ]
+    },
+    {
+      "id": "house.empty-intensifiers",
+      "name": "Cut empty intensifiers",
+      "category": "precision",
+      "source": "house style (after Strunk & White)",
+      "method": "heuristic",
+      "severity": "suggestion",
+      "rationale": "Empty intensifiers (very, really, quite, rather) pad a claim without adding information. A precise word or number makes them unnecessary.",
+      "detector": {
+        "kind": "regex",
+        "pattern": "\\b(?:very|really|quite|rather)\\b",
+        "flags": "gi"
+      },
+      "examples": [{ "before": "a very large improvement", "after": "a 4-point improvement" }]
+    }
+  ],
+  "patterns": []
+}

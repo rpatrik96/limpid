@@ -17,6 +17,7 @@
     "eval": "vitest run packages/coach/src/eval/golden.test.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
+    "package:share": "bash scripts/package-share.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

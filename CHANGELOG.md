@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Shareable distribution bundle + release assets.** `npm run package:share` (and the
+  `v*` release workflow) assemble `limpid-share-<version>.zip` — the `.vsix` extension,
+  the headless CLI, example configs, and an LLM-oriented operator guide
+  (`share/LIMPID_FOR_LLMS.md`) that can be dropped into a project as `AGENTS.md` /
+  `llms.txt`. Tagging `v<version>` now attaches both the `.vsix` and the bundle to the
+  GitHub Release.
+
 ## [0.0.14]
 
 ### Added

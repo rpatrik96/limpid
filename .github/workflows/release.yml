@@ -25,17 +25,18 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Package extension (.vsix)
-        working-directory: apps/extension
-        run: npx --yes @vscode/vsce package --no-dependencies
+      - name: Package the extension + share bundle
+        # Builds the extension, packages the .vsix, builds the CLI, and assembles
+        # share/dist/limpid-share-<version>.zip (vsix + LLM guide + CLI + examples).
+        run: npm run package:share
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: apps/extension/*.vsix
+          generate_release_notes: true
+          files: |
+            apps/extension/*.vsix
+            share/dist/limpid-share-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

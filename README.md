@@ -51,7 +51,11 @@ lives alongside it at [`media/demo/webview.png`](media/demo/webview.png).
 ## Install
 
 Limpid is in **internal testing ahead of a public release**, so it isn't on the
-Marketplace yet. Grab a packaged `.vsix` or build one below, then install it:
+Marketplace yet. Download the latest **`.vsix`** — or the full
+`limpid-share-<version>.zip` bundle (extension + an LLM-readable operator guide + the
+CLI + example configs) — from the repo's
+[Releases](https://github.com/rpatrik96/limpid/releases) page, or build one below.
+Then install:
 
 ```bash
 code --install-extension limpid-<version>.vsix
