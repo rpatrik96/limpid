@@ -5,11 +5,22 @@
  */
 import type { RuleDetector } from "@coach/contract";
 
+import { isSafeUserRegex } from "./userRules.js";
+
 export interface DetectorMatch {
   start: number;
   end: number;
   text: string;
 }
+
+/**
+ * Cap the input a user regex runs against. `matchRegex` is the only path that
+ * runs an arbitrary (possibly user-authored) pattern, and JS regex is
+ * synchronous — a pathological pattern on long input hangs the host. Built-in
+ * word/phrase/opener detectors compile fixed, escaped alternations and are safe,
+ * but they funnel through `matchRegex` too, so the cap is generous.
+ */
+export const MAX_REGEX_INPUT_LENGTH = 200_000;
 
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -23,7 +34,11 @@ export function runDetector(detector: RuleDetector, text: string): DetectorMatch
     case "phrases":
       return matchAlternation(detector.phrases.map(escapeRegExp), text);
     case "regex":
-      return matchRegex(detector.pattern, detector.flags, text);
+      // Only the user-regex path runs an arbitrary pattern. Reject ReDoS-shaped
+      // / over-long patterns up front (fail soft) so it can never hang the host,
+      // and bound the input the regex scans.
+      if (!isSafeUserRegex(detector.pattern)) return [];
+      return matchRegex(detector.pattern, detector.flags, text.slice(0, MAX_REGEX_INPUT_LENGTH));
     case "opener":
       return matchOpeners(detector.prefixes, text);
     default:

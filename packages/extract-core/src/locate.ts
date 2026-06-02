@@ -12,15 +12,7 @@
  */
 import type { Extraction, Span } from "@coach/contract";
 
-const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-function lineStartOffsets(source: string): number[] {
-  const starts = [0];
-  for (let i = 0; i < source.length; i++) {
-    if (source[i] === "\n") starts.push(i + 1);
-  }
-  return starts;
-}
+import { escapeRegExp, lineStartOffsets } from "./buildSections.js";
 
 /** A regex that matches the snippet's tokens separated by arbitrary whitespace. */
 function snippetRegex(snippet: string): RegExp | null {

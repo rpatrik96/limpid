@@ -61,7 +61,8 @@ function asReadableError(err: unknown): Error {
     }
     if (err.code === vscode.LanguageModelError.Blocked.name) {
       return new Error(
-        "Copilot request blocked — likely the monthly Free quota or a content filter.",
+        "Copilot request blocked — likely the monthly Free quota or a content filter. " +
+          'For heavier use, set a provider key via "Limpid: Set API Key" (or change limpid.provider).',
       );
     }
     if (err.code === vscode.LanguageModelError.NotFound.name) {

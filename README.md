@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-282-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-360-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -18,6 +18,11 @@ It is built for LaTeX and Markdown (and plain prose): point it at a `.tex` or
 `.md` selection and it strips the markup, scores four dimensions, and coaches it.
 In Markdown, headings (`#`…`######`) drive sectioning the way `\section` does in
 LaTeX.
+
+Limpid judges **rhetoric** — clarity, structure, flow, voice — **not spelling or
+grammar**. It complements a grammar/spell checker (Grammarly, LanguageTool); it does
+not replace one. If your first need is articles, tense, and typos, reach for those;
+reach for Limpid when the sentences are correct but the writing still doesn't land.
 
 ## Contents
 
@@ -45,7 +50,8 @@ lives alongside it at [`media/demo/webview.png`](media/demo/webview.png).
 
 ## Install
 
-Grab a packaged `.vsix` (from a release, or build one below) and install it:
+Limpid is in **internal testing ahead of a public release**, so it isn't on the
+Marketplace yet. Grab a packaged `.vsix` or build one below, then install it:
 
 ```bash
 code --install-extension limpid-<version>.vsix
@@ -85,16 +91,20 @@ over time). Trigger an analysis from the Coach view, or:
   Markdown, an `#`/`##`/… heading) and coach just that (nested subsections included),
 - or click **Coach selection** / **Coach section…** in the view itself.
 
-Whatever you coached is remembered, so **saving the file re-runs the same scope**
-(re-analysis happens on save only, never on keystroke — toggle with
-`limpid.reanalyzeOnSave`).
+Whatever you coached is remembered, so **saving the file re-runs the same scope** —
+but a save refresh is deterministic-only (it never spends an LLM request), so a tight
+save loop can't burn your quota; the writing lenses re-run on an explicit coach.
+Toggle save-refresh with `limpid.reanalyzeOnSave`.
 
 ## What it does
 
 - **Highlights** the extracted prose, Hemingway-style — long sentences, passive
   voice, hedges, fillers, weak openers.
 - **Coaches** with cards: a named pattern (Buried Lede, Idea Soup, Hedge
-  Stacking…) → _why it fails_ → a before/after fix → the rule it comes from.
+  Stacking…) → _why it fails_ → a before/after fix → the rule it comes from. Each
+  card can **reveal** the passage in the editor; where there's a concrete rewrite,
+  **apply fix** inserts it (and falls back to your clipboard when the source carries
+  markup).
 - **Audience altitude:** judges whether the prose sits at the right level for its
   reader. Limpid infers the reader, and you can change it in the view to re-run.
 - **Grade + dimensions** (Accessibility / Clarity / Flow / Precision) with a
@@ -133,10 +143,13 @@ just without the four LLM lenses.
 store one (masked input → `SecretStorage`), and **“Limpid: Clear API Key”** to
 remove it. The keyless paths (Copilot, Claude Code CLI, Ollama) need no key at all.
 
-> **Copilot Free is enough.** Sign into GitHub in VS Code and enable Copilot
-> (Free plan, no card); the first coach run asks for one-time consent. The Free
-> tier shares a small monthly request quota, so on `Blocked`/quota errors Limpid
-> degrades to a deterministic report and tells you.
+> **Copilot Free is enough to start.** Sign into GitHub in VS Code and enable
+> Copilot (Free plan, no card); the first coach run asks for one-time consent. It's
+> the lightest LLM path: the Free tier shares a small monthly quota, so under heavy
+> use Limpid degrades to a deterministic report and tells you — for sustained use,
+> set a provider key (**Limpid: Set API Key**). Saving a file refreshes only the
+> deterministic metrics, so a tight save loop never spends a request; the four
+> judgment lenses re-run on an explicit coach.
 
 ## Editable rules (playground)
 
@@ -174,7 +187,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 282 vitest tests across core + extension
+npm test            # 360 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses
@@ -221,11 +234,11 @@ Mistral) with SecretStorage-backed keys and graceful deterministic fallback.
 It handles both LaTeX and Markdown — `.md` files extract through a dedicated
 Markdown engine (frontmatter, fenced code, tables, and link URLs dropped; headings
 drive sectioning) rather than the LaTeX stripper. Beyond the core: editable rules +
-a rule playground (`.limpid/rules.json`), the `limpid` CLI gate, multi-register
-coaching, inline `.tex`/`.md` diagnostics, and the **Learn** view (pattern library +
-trends over time) all ship. Inline diagnostics
-map findings back to source with a whitespace-tolerant snippet search — verbatim
-accurate, with a precise per-character source map still to come; the Learn view's
-recurring-pattern insight populates from the LLM-diagnosed patterns (the grade and
-metric trend record even on deterministic-only runs). Not yet built: the public
-web surface, a precise source map, and learning-center quizzes / gamification.
+a rule playground (`.limpid/rules.json`, whose detector rules feed the grade), the
+`limpid` CLI gate, multi-register coaching, inline `.tex`/`.md` diagnostics,
+one-click **apply-fix** on coach cards, and the **Learn** view (pattern library +
+per-dimension and per-section trends over time) all ship. Reveal-in-editor and
+apply-fix map a finding back to source with a whitespace-tolerant locator (so they
+land on the right occurrence and survive markup); inline diagnostics use the same
+locator, with a precise per-character source map still to come. Not yet built: the
+public web surface, a precise source map, and learning-center quizzes / gamification.

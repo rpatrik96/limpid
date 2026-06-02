@@ -126,4 +126,49 @@ describe("findUndefinedAcronyms", () => {
     const { undefinedAcronyms } = findUndefinedAcronyms(text);
     expect(undefinedAcronyms).not.toContain("GNN");
   });
+
+  // ── Jargon-cliff guards (finding 7): not every all-caps token is an acronym ──
+
+  it("does NOT flag common all-caps English / discourse words", () => {
+    const text = "This is NOT a problem AND it is OK; the result holds for ALL inputs.";
+    const { undefinedAcronyms, undefinedUses } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toEqual([]);
+    expect(undefinedUses).toEqual([]);
+  });
+
+  it("does NOT flag section-heading tokens used inline", () => {
+    const text = "The METHODS describe the setup and the RESULTS confirm it.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).not.toContain("METHODS");
+    expect(undefinedAcronyms).not.toContain("RESULTS");
+  });
+
+  it("does NOT flag a token alone on its own heading line", () => {
+    const text = "METHODS\nWe describe the SVM setup. A Support Vector Machine (SVM) is used.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    // METHODS sits alone on the heading line → skipped; SVM is still caught.
+    expect(undefinedAcronyms).not.toContain("METHODS");
+    expect(undefinedAcronyms).toContain("SVM");
+  });
+
+  it("does NOT flag roman numerals (section markers)", () => {
+    const text = "See Section III and Phase XII for the IV ablation.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).not.toContain("III");
+    expect(undefinedAcronyms).not.toContain("XII");
+    expect(undefinedAcronyms).not.toContain("IV");
+  });
+
+  it("does NOT flag settled initialisms in the stoplist (IID)", () => {
+    const text = "We assume the samples are IID across the dataset.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).not.toContain("IID");
+  });
+
+  it("still flags a genuine undefined initialism used inline", () => {
+    const text = "We optimize with SGD and report the RMSE on the held-out split.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toContain("SGD");
+    expect(undefinedAcronyms).toContain("RMSE");
+  });
 });

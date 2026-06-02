@@ -7,7 +7,7 @@
  * non-adverb "-ly"-ending nouns (only, family, …) are NOT adverbs.
  */
 
-import { ADVERB_STOPLIST, BE_VERBS, IRREGULAR_PARTICIPLES } from "./wordlists.js";
+import { ACRONYM_STOPLIST, ADVERB_STOPLIST, BE_VERBS, IRREGULAR_PARTICIPLES } from "./wordlists.js";
 import type { SentenceSpan } from "./text.js";
 
 export interface Match {
@@ -135,10 +135,40 @@ export interface AcronymUse {
   end: number;
 }
 
+/** Roman numerals (I, II, IV, XII, …) — section markers, not jargon. */
+const ROMAN_NUMERAL_RE = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+
+function isRomanNumeral(token: string): boolean {
+  return token.length > 0 && ROMAN_NUMERAL_RE.test(token);
+}
+
+/**
+ * An acronym is a "jargon cliff" candidate only if it looks like a real
+ * initialism a reader might not know: not a common all-caps English / discourse
+ * word, not a roman numeral. We keep it a low-confidence suggestion, so we err
+ * toward NOT flagging settled or stress-marked all-caps tokens.
+ */
+function isAcronymCandidate(token: string): boolean {
+  if (ACRONYM_STOPLIST.has(token.toUpperCase())) return false;
+  if (isRomanNumeral(token)) return false;
+  return true;
+}
+
+/** The line containing `at` is a heading if its non-blank content is just `token`. */
+function isAloneOnHeadingLine(text: string, at: number, token: string): boolean {
+  const lineStart = text.lastIndexOf("\n", at - 1) + 1;
+  let lineEnd = text.indexOf("\n", at);
+  if (lineEnd === -1) lineEnd = text.length;
+  return text.slice(lineStart, lineEnd).trim() === token;
+}
+
 /**
  * Scan for /\b[A-Z]{2,}\b/ acronyms. A "Word Word (AB)" pattern is a definition:
  * the acronym is considered defined at and after that position. Flag any
- * acronym USED before its first definition.
+ * acronym USED before its first definition — but only genuine initialism
+ * candidates: common all-caps English words ("NOT", "AND"), section-heading
+ * tokens ("METHODS"), roman numerals ("III", "XII"), and a token alone on a
+ * heading line are skipped, since none is a jargon cliff.
  *
  * Returns { undefinedUses, undefinedAcronyms } where undefinedAcronyms is the
  * unique, first-seen-ordered list of acronyms used before definition.
@@ -168,6 +198,10 @@ export function findUndefinedAcronyms(text: string): {
   while ((um = useRe.exec(text)) !== null) {
     const acro = um[0];
     const at = um.index;
+    // Skip non-initialisms: common all-caps words, headings, roman numerals.
+    if (!isAcronymCandidate(acro)) continue;
+    // A token alone on its line is a heading, not a use-before-definition.
+    if (isAloneOnHeadingLine(text, at, acro)) continue;
     const defAt = definedAt.get(acro);
     // The token that sits inside the definition parens (the defining occurrence)
     // is at defAt + 1; never flag the definition itself or anything at/after it.

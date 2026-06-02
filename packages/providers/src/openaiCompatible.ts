@@ -20,10 +20,18 @@ export interface FetchResponseLike {
 
 export type FetchLike = (
   url: string,
-  init: { method: string; headers: Record<string, string>; body: string },
+  init: {
+    method: string;
+    headers: Record<string, string>;
+    body: string;
+    signal?: AbortSignal | undefined;
+  },
 ) => Promise<FetchResponseLike>;
 
 const defaultFetch: FetchLike = (url, init) => fetch(url, init);
+
+/** Default request timeout (ms) for network adapters before we abort and fall back. */
+export const DEFAULT_REQUEST_TIMEOUT_MS = 90_000;
 
 export interface OpenAICompatibleConfig {
   /** e.g. `https://api.openai.com/v1` (trailing slash tolerated). */
@@ -37,6 +45,8 @@ export interface OpenAICompatibleConfig {
   jsonMode?: boolean | undefined;
   /** display label for {@link LanguageModel.id}, e.g. "openai". */
   label?: string | undefined;
+  /** abort the request after this many ms (default {@link DEFAULT_REQUEST_TIMEOUT_MS}). */
+  timeoutMs?: number | undefined;
   /** injectable for tests; defaults to the global `fetch`. */
   fetchFn?: FetchLike | undefined;
 }
@@ -103,7 +113,28 @@ export class OpenAICompatibleModel implements LanguageModel {
 
     const doFetch = this.cfg.fetchFn ?? defaultFetch;
     const url = `${this.cfg.baseURL.replace(/\/$/, "")}/chat/completions`;
-    const res = await doFetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+
+    const timeoutMs = this.cfg.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let res: FetchResponseLike;
+    try {
+      res = await doFetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      // A stalled endpoint aborts here; surface it so reviewWithFallback can
+      // degrade to the deterministic coach instead of hanging forever.
+      if (controller.signal.aborted) {
+        throw new Error(`${this.id} timed out after ${timeoutMs}ms`, { cause: e });
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");

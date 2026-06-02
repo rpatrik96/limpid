@@ -91,6 +91,17 @@ async function buildCustom(context: vscode.ExtensionContext): Promise<LanguageMo
   });
 }
 
+/**
+ * When the user EXPLICITLY chose a provider that isn't configured, say so with an
+ * action — silently degrading to deterministic-only (the old behavior) left them
+ * wondering why the LLM lenses never appeared.
+ */
+async function warnUnconfigured(message: string, action: string, command: string): Promise<null> {
+  const picked = await vscode.window.showWarningMessage(`Limpid: ${message}`, action);
+  if (picked === action) void vscode.commands.executeCommand(command);
+  return null;
+}
+
 /** Pick the configured (or auto-detected) model, or null for deterministic-only. */
 export async function pickLanguageModel(
   context: vscode.ExtensionContext,
@@ -103,17 +114,30 @@ export async function pickLanguageModel(
     case "claude-code":
       return buildClaudeCode();
     case "anthropic":
-      return buildAnthropic(context);
+      return (
+        (await buildAnthropic(context)) ??
+        warnUnconfigured("no Anthropic API key stored.", "Set API Key", "limpid.setApiKey")
+      );
     case "openai":
     case "openrouter":
     case "groq":
     case "together":
     case "mistral":
-      return buildOpenAIPreset(context, choice);
+      return (
+        (await buildOpenAIPreset(context, choice)) ??
+        warnUnconfigured(`no ${choice} API key stored.`, "Set API Key", "limpid.setApiKey")
+      );
     case "ollama":
       return buildOllama();
     case "openai-compatible":
-      return buildCustom(context);
+      return (
+        (await buildCustom(context)) ??
+        warnUnconfigured(
+          "set limpid.openaiCompatible.baseURL to use a custom endpoint.",
+          "Open Settings",
+          "workbench.action.openSettings",
+        )
+      );
     case "auto":
     default: {
       const copilot = await tryVsCodeModel();

@@ -49,6 +49,19 @@ export function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * A Content-Security-Policy `<meta>`. With a nonce, inline style + script are locked
+ * to it. Without one (e.g. a future web embed that forgot to supply a nonce), allow
+ * inline styles to render but forbid scripts — safe by default rather than wide open.
+ */
+function cspMeta(nonce?: string): string {
+  if (nonce) {
+    const n = escapeHtml(nonce);
+    return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-${n}'; script-src 'nonce-${n}';">`;
+  }
+  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">`;
+}
+
 /** Clamp a span to the valid [0, len] range; drop it if empty/inverted. */
 function clampSpan(span: Span, len: number): Span | null {
   const start = Math.max(0, Math.min(span.start, len));
@@ -115,11 +128,16 @@ function renderCard(f: Finding, index: number): string {
     f.spans.length > 0
       ? `<button class="reveal" data-finding="${index}" title="Reveal in editor">reveal</button>`
       : "";
+  // "apply fix" only when there's a concrete rewrite AND a span to anchor it to.
+  const apply =
+    f.after !== undefined && f.spans.length > 0
+      ? `<button class="apply" data-apply="${index}" title="Apply the rewrite to the editor">apply fix</button>`
+      : "";
   const parts: string[] = [];
   parts.push(`<div class="card sev-${f.severity}">`);
   parts.push(
     `<div class="card-head"><span class="badge">${escapeHtml(f.category)}</span>` +
-      `<span class="card-title">${escapeHtml(heading)}</span>${reveal}</div>`,
+      `<span class="card-title">${escapeHtml(heading)}</span>${reveal}${apply}</div>`,
   );
   parts.push(`<p class="card-msg">${escapeHtml(f.message)}</p>`);
   // Why / Fix as a tight definition list — labels recede, bodies run inline.
@@ -266,6 +284,9 @@ if (sectionBtn) sectionBtn.addEventListener("click", function () { post({ type: 
 document.querySelectorAll("[data-finding]").forEach(function (el) {
   el.addEventListener("click", function () { post({ type: "reveal", finding: Number(el.getAttribute("data-finding")) }); });
 });
+document.querySelectorAll("[data-apply]").forEach(function (el) {
+  el.addEventListener("click", function () { post({ type: "applyFix", finding: Number(el.getAttribute("data-apply")) }); });
+});
 </script>`;
 }
 
@@ -284,10 +305,7 @@ export interface RenderOptions {
  */
 export function renderReport(report: CoachReport, options: RenderOptions = {}): string {
   const nonceAttr = options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : "";
-  const cspNonce = options.nonce ? escapeHtml(options.nonce) : "";
-  const csp = options.nonce
-    ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-${cspNonce}'; script-src 'nonce-${cspNonce}';">`
-    : "";
+  const csp = cspMeta(options.nonce);
 
   const audiences = options.audiences ?? DEFAULT_AUDIENCES;
   const current = options.currentAudience ?? "";
@@ -326,7 +344,7 @@ ${renderAltitude(report, audiences, current)}
     report.findings,
   )}</div></section>
 ${cardsBlock}
-${renderController(nonceAttr)}
+${options.nonce ? renderController(nonceAttr) : ""}
 </body>
 </html>`;
 }
@@ -334,10 +352,7 @@ ${renderController(nonceAttr)}
 /** The empty-state document (no report yet): a prompt + the action buttons. */
 export function renderPlaceholder(options: RenderOptions = {}): string {
   const nonceAttr = options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : "";
-  const cspNonce = options.nonce ? escapeHtml(options.nonce) : "";
-  const csp = options.nonce
-    ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-${cspNonce}'; script-src 'nonce-${cspNonce}';">`
-    : "";
+  const csp = cspMeta(options.nonce);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -356,9 +371,9 @@ ${csp}
     <button id="coach-btn" class="action-btn">Coach selection</button>
     <button id="coach-section-btn" class="action-btn">Coach section…</button>
   </div>
-  <p class="hint">⌘⌥L / Ctrl+Alt+L coaches the selection. Re-analysis also runs when you save.</p>
+  <p class="hint">⌘⌥L / Ctrl+Alt+L coaches the selection. Saving refreshes the metrics.</p>
 </div>
-${renderController(nonceAttr)}
+${options.nonce ? renderController(nonceAttr) : ""}
 </body>
 </html>`;
 }
@@ -462,6 +477,9 @@ mark.sev-error { border-color: var(--sev-error); }
 .card-title { font-weight: 600; min-width: 0; }
 .reveal { margin-left: auto; font-size: 0.7rem; padding: 0.1rem 0.45rem; border: 1px solid rgba(127,127,127,0.4); border-radius: 0.3rem; background: transparent; color: inherit; cursor: pointer; flex: none; }
 .reveal:hover { background: rgba(127,127,127,0.15); }
+.apply { font-size: 0.7rem; padding: 0.1rem 0.45rem; border: 1px solid var(--sev-suggestion); border-radius: 0.3rem; background: rgba(91,191,106,0.12); color: inherit; cursor: pointer; flex: none; }
+.apply:hover { background: rgba(91,191,106,0.24); }
+.reveal + .apply { margin-left: var(--sp-1); }
 .card-msg { margin: var(--sp-2) 0 var(--sp-1); }
 .card-wf { margin: var(--sp-1) 0; display: grid; grid-template-columns: auto 1fr; gap: 0 var(--sp-2); font-size: 0.9rem; }
 .card-wf dt { font-weight: 600; opacity: 0.7; }

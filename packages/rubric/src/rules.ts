@@ -1,11 +1,22 @@
 import type { Rule } from "@coach/contract";
 
+import {
+  BOOSTER_WORDS,
+  CLICHES,
+  FILLER_PHRASES,
+  FILLER_WORDS,
+  HEDGE_PHRASES,
+  HEDGE_WORDS,
+  HYPE_WORDS,
+  WEAK_OPENERS,
+} from "./wordlists.js";
+
 /**
  * The canon as data. Each rule grounds a check in a named source, carries the
  * teaching "why" (rationale), and — where the check is mechanical — a detector
- * the engine can run without an LLM. Word/phrase lists are the canonical ones
- * from `scripts/writing_verify.py`; structural rules cite Gopen & Swan and the
- * Economist via the grounding notes in `sources/`.
+ * the engine can run without an LLM. The canonical word/phrase lists live in
+ * `wordlists.ts` (the single source the engine also imports); structural rules
+ * cite Gopen & Swan and the Economist via the grounding notes in `sources/`.
  *
  * Detector kinds:
  *   words   — whole-word match (engine adds \b boundaries)
@@ -16,142 +27,9 @@ import type { Rule } from "@coach/contract";
  * Severity ladder: error > warning > suggestion > info.
  */
 
-// ── Canonical word lists (mirrors writing_verify.py) ────────────────────────
-
-const FILLER_WORDS = [
-  "basically",
-  "simply",
-  "just",
-  "actually",
-  "really",
-  "very",
-  "quite",
-  "rather",
-  "somewhat",
-  "perhaps",
-  "fairly",
-  "literally",
-  "essentially",
-  "obviously",
-  "clearly",
-  "certainly",
-  "definitely",
-  "practically",
-];
-
-const FILLER_PHRASES = [
-  "in order to",
-  "it should be noted that",
-  "it is important to note that",
-  "it is worth noting that",
-  "as a matter of fact",
-  "it goes without saying",
-  "needless to say",
-  "at the end of the day",
-  "for all intents and purposes",
-  "in the final analysis",
-  "it can be seen that",
-  "as we all know",
-  "it is well known that",
-  "it is interesting to note that",
-];
-
-const HEDGE_WORDS = [
-  "might",
-  "may",
-  "could",
-  "possibly",
-  "potentially",
-  "perhaps",
-  "seemingly",
-  "apparently",
-  "arguably",
-  "presumably",
-  "conceivably",
-  "likely",
-  "unlikely",
-  "probable",
-  "plausible",
-];
-
-const HEDGE_PHRASES = [
-  "to some extent",
-  "in some cases",
-  "it is possible that",
-  "it seems that",
-  "it appears that",
-  "we believe that",
-  "it is likely that",
-  "we feel that",
-  "one might argue",
-  "it could be argued",
-  "there is reason to believe",
-];
-
-const WEAK_OPENERS = [
-  "it is",
-  "it was",
-  "there is",
-  "there are",
-  "there was",
-  "there were",
-  "it has been",
-  "it should be noted",
-  "it is important",
-  "it is worth",
-  "it is interesting",
-  "it can be seen",
-  "as we all know",
-  "as is well known",
-];
-
-// Boosters: the conviction-inflating mirror image of hedges. Empty intensifiers
-// that assert importance instead of demonstrating it.
-const BOOSTER_WORDS = [
-  "clearly",
-  "obviously",
-  "evidently",
-  "undoubtedly",
-  "certainly",
-  "definitely",
-  "surely",
-  "naturally",
-  "of course",
-  "without a doubt",
-  "needless to say",
-  "it is evident that",
-];
-
-// Marketing adjectives papers should demonstrate, not assert.
-const HYPE_WORDS = [
-  "novel",
-  "powerful",
-  "revolutionary",
-  "groundbreaking",
-  "cutting-edge",
-  "state-of-the-art",
-  "seminal",
-  "remarkable",
-  "significant",
-  "tremendous",
-];
-
-const CLICHES = [
-  "paradigm shift",
-  "low-hanging fruit",
-  "the tip of the iceberg",
-  "a double-edged sword",
-  "at the end of the day",
-  "think outside the box",
-  "push the envelope",
-  "move the needle",
-  "in this day and age",
-  "last but not least",
-  "the elephant in the room",
-  "a perfect storm",
-  "boils down to",
-  "when all is said and done",
-];
+// A `RuleDetector`'s word/phrase fields are mutable `string[]`; the canonical
+// lists are `readonly`, so copy them into fresh arrays at the detector boundary.
+const w = (xs: readonly string[]): string[] => [...xs];
 
 // ── Rules ───────────────────────────────────────────────────────────────────
 
@@ -166,7 +44,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       "A worn-out metaphor (a cliché) has lost its image and so does no work — it merely signals that the writer is not thinking in pictures. Orwell's test: never use a figure of speech you are used to seeing in print.",
-    detector: { kind: "phrases", phrases: CLICHES },
+    detector: { kind: "phrases", phrases: w(CLICHES) },
     examples: [
       {
         before: "Our results are just the tip of the iceberg.",
@@ -205,7 +83,7 @@ export const rules: Rule[] = [
     severity: "warning",
     rationale:
       "Filler words and dead phrases add length without meaning. Cutting them sharpens the claim and lets the real words carry weight. Orwell's third rule is Strunk's seventeenth in disguise.",
-    detector: { kind: "words", words: FILLER_WORDS },
+    detector: { kind: "words", words: w(FILLER_WORDS) },
     examples: [
       {
         before: "This is basically just a very simple extension of prior work.",
@@ -279,7 +157,7 @@ export const rules: Rule[] = [
     severity: "warning",
     rationale:
       'Vigorous writing is concise: every word should tell. This targets empty phrases — "in order to", "it is important to note that" — not the connectives that carry an argument. Conciseness means every word works, not that every sentence is short.',
-    detector: { kind: "phrases", phrases: FILLER_PHRASES },
+    detector: { kind: "phrases", phrases: w(FILLER_PHRASES) },
     examples: [
       {
         before: "It is important to note that, in order to train, we needed more data.",
@@ -318,7 +196,7 @@ export const rules: Rule[] = [
     severity: "warning",
     rationale:
       'An expletive opener ("there is", "it is") postpones the real subject behind a dummy placeholder, draining the sentence of its actor and adding words. Recast with the true subject first.',
-    detector: { kind: "opener", prefixes: WEAK_OPENERS },
+    detector: { kind: "opener", prefixes: w(WEAK_OPENERS) },
     examples: [
       {
         before: "There is a strong correlation between depth and accuracy.",
@@ -531,7 +409,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       'One hedge per claim is honest scope-marking. Stacked hedges ("might possibly suggest could") tell the reader you don\'t believe the claim either. Hedge scope, not conviction: "sufficient but not necessary" is a virtue; "arguably" is a crutch.',
-    detector: { kind: "words", words: HEDGE_WORDS },
+    detector: { kind: "words", words: w(HEDGE_WORDS) },
     examples: [
       {
         before: "Our results might possibly suggest the effect could potentially be real.",
@@ -548,7 +426,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       'Multi-word hedges ("it could be argued that", "there is reason to believe") hide the author and dilute the claim. State it and own it, or cut it. Conviction-hedging is the fault; scope-hedging is fine.',
-    detector: { kind: "phrases", phrases: HEDGE_PHRASES },
+    detector: { kind: "phrases", phrases: w(HEDGE_PHRASES) },
     examples: [
       {
         before: "It could be argued that, to some extent, the method helps.",
@@ -565,7 +443,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       'Boosters assert importance the prose should demonstrate. "Clearly" and "obviously" often flag the step the author skipped — if it were clear, the word would be unnecessary. Show the reasoning instead.',
-    detector: { kind: "words", words: BOOSTER_WORDS },
+    detector: { kind: "words", words: w(BOOSTER_WORDS) },
     examples: [
       {
         before: "Clearly, the method obviously generalizes.",
@@ -582,7 +460,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       'Marketing adjectives ask the reader to take a verdict on faith. Reviewers flag "novel" and "powerful" as tells. Let the result earn the adjective — report the number and drop the boast.',
-    detector: { kind: "words", words: HYPE_WORDS },
+    detector: { kind: "words", words: w(HYPE_WORDS) },
     examples: [
       {
         before: "We propose a novel and powerful state-of-the-art method.",
@@ -599,7 +477,7 @@ export const rules: Rule[] = [
     severity: "suggestion",
     rationale:
       "A cliché is a dead metaphor that signals borrowed thinking. Replace it with the literal claim it was standing in for, which is almost always more specific and more honest.",
-    detector: { kind: "phrases", phrases: CLICHES },
+    detector: { kind: "phrases", phrases: w(CLICHES) },
     examples: [
       {
         before: "This is a paradigm shift that picks the low-hanging fruit.",

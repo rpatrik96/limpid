@@ -40,7 +40,8 @@ export function parseClaudeResult(stdout: string): string {
   return trimmed;
 }
 
-const defaultRunner: CliRunner = (command, args, stdin, timeoutMs) =>
+/** The real `spawn`-backed runner. Exported for tests; default for {@link ClaudeCliModel}. */
+export const defaultRunner: CliRunner = (command, args, stdin, timeoutMs) =>
   new Promise<string>((resolve, reject) => {
     const child = spawn(command, args, { stdio: ["pipe", "pipe", "pipe"] });
     let out = "";
@@ -59,8 +60,19 @@ const defaultRunner: CliRunner = (command, args, stdin, timeoutMs) =>
       else reject(new Error(`${command} exited ${code ?? "?"}: ${err.slice(0, 200)}`));
     });
 
-    child.stdin.write(stdin);
-    child.stdin.end();
+    // If the child exits before we finish piping the prompt, the stdin socket
+    // emits EPIPE/ECONNRESET. Without a listener that error is unhandled and
+    // crashes the extension host, so we swallow it and let the child's own
+    // 'close'/'error' drive the result (the deterministic-fallback path).
+    child.stdin.on("error", () => {
+      /* ignore broken-pipe writes; result is decided by the child handlers */
+    });
+    try {
+      child.stdin.write(stdin);
+      child.stdin.end();
+    } catch {
+      // synchronous write/end failures are likewise non-fatal here.
+    }
   });
 
 export class ClaudeCliModel implements LanguageModel {

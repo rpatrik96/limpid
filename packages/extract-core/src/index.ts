@@ -5,6 +5,8 @@
  *
  *   - {@link assembleExtraction} — join cleaned lines, collapse blanks, record a
  *     coarse monotonic source map, compute section ranges + proseRatio.
+ *   - {@link buildNestedSections} — located heads → nested SourceSections (the
+ *     "span runs to the next same-or-higher heading" rule, shared by both formats).
  *   - {@link classifyTitle} — heading title → SectionKind.
  *   - {@link locateSpanInSource} — extracted-prose span → raw-source range.
  *
@@ -18,4 +20,10 @@ export {
   type SourceLine,
   type SectionMarker,
 } from "./assemble.js";
+export {
+  buildNestedSections,
+  lineStartOffsets,
+  escapeRegExp,
+  type SourceHead,
+} from "./buildSections.js";
 export type { SourceSection } from "./sourceSection.js";

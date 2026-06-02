@@ -24,6 +24,30 @@ function strArray(v: unknown): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 }
 
+/** Hard cap on a user-supplied regex source length (ReDoS surface area). */
+export const MAX_USER_PATTERN_LENGTH = 500;
+
+/**
+ * Heuristic for a catastrophic-backtracking pattern: a quantified group whose
+ * body is itself quantified — `(a+)+`, `(a*)*`, `(a+)*`, `(\w+\s*)+`, etc. These
+ * are the classic ReDoS shapes; `(a+)+$` on 40 a's never returns. We reject the
+ * pattern outright rather than try to run it under a time budget (JS regex is
+ * synchronous and cannot be interrupted once started).
+ */
+const NESTED_QUANTIFIER_RE = /\([^()]*[+*][^()]*\)\s*[+*]/;
+
+/** True if a user regex looks safe to compile and run on bounded input. */
+export function isSafeUserRegex(pattern: string): boolean {
+  if (pattern.length > MAX_USER_PATTERN_LENGTH) return false;
+  if (NESTED_QUANTIFIER_RE.test(pattern)) return false;
+  try {
+    new RegExp(pattern);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 function validateDetector(v: unknown): RuleDetector | undefined {
   if (!isObj(v)) return undefined;
   switch (v["kind"]) {
@@ -40,7 +64,10 @@ function validateDetector(v: unknown): RuleDetector | undefined {
       return prefixes.length ? { kind: "opener", prefixes } : undefined;
     }
     case "regex":
-      return str(v["pattern"])
+      // Reject empty, over-long, uncompilable, and ReDoS-shaped patterns so a
+      // pathological user rule (e.g. "(a+)+$") can never reach matchRegex and
+      // hang the host synchronously.
+      return str(v["pattern"]) && isSafeUserRegex(v["pattern"])
         ? {
             kind: "regex",
             pattern: v["pattern"],

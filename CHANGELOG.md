@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.12]
+
+### Added
+
+- **Apply-the-fix**: coach cards with a concrete rewrite now show an **apply fix**
+  button that inserts the "after" into the editor (falling back to the clipboard when
+  the source carries markup, so a LaTeX/Markdown construct is never broken by a blind
+  edit).
+- First-run **Get Started** walkthrough (coach a passage → pick a model → learn the
+  patterns).
+- The **Learn** view now tracks **per-dimension and per-section trends**, not just a
+  flat grade line.
+
+### Changed
+
+- **Editable rules now affect the grade.** Detector-backed rules in
+  `.limpid/rules.json` run in the coach pipeline (previously only the _Test Rule_
+  playground exercised them); engine rule ids are reconciled to the rubric so inline
+  hovers show each rule's rationale; the canonical word lists are single-sourced in
+  `@coach/rubric`.
+- **Save no longer spends an LLM request.** A save refresh recomputes the
+  deterministic metrics only; the four judgment lenses re-run on an explicit coach —
+  a tight save loop (or autosave) can't exhaust the Copilot quota.
+- Coach runs show a **cancellable** progress notification, and a superseded run's
+  result is dropped (latest-wins).
+- The inline-diagnostic quick-fix ("Coach this in Limpid") now coaches the **flagged
+  range**, not the whole file; reveal-in-editor and apply-fix route through the
+  whitespace-tolerant source locator (right occurrence, survives `.tex`/`.md` markup).
+- Choosing a provider with no key now surfaces an actionable **Set API Key** prompt
+  instead of silently degrading; the Copilot quota message points to setting a key.
+- Limpid judges rhetoric, **not grammar/spelling** — stated explicitly in the README
+  and manifest. CI runs a Node 20 + 22 matrix; the esbuild target matches the
+  Node 20 floor.
+
+### Fixed
+
+- User-supplied rule regexes are guarded against catastrophic backtracking (ReDoS),
+  and bounded in length — a malicious `.limpid/rules.json` can no longer hang the host.
+- The Claude Code CLI runner no longer crashes the host with an unhandled `EPIPE`
+  when the child exits early; the network adapters (OpenAI-compatible, Anthropic) now
+  time out instead of hanging forever.
+- The undefined-acronym check no longer flags common all-caps words, settled
+  initialisms, or roman numerals as a "jargon cliff".
+- Multi-line / unbalanced LaTeX display math (`\[ … \]`, `$$ … $$`) no longer leaks
+  into the extracted prose; a malformed CLI threshold flag now fails loudly instead of
+  silently disabling the gate.
+
 ## [0.0.11]
 
 ### Added

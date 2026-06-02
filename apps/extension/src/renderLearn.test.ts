@@ -12,6 +12,8 @@ const empty: HistorySummary = {
   topPatterns: [],
   recentGrades: [],
   avg: null,
+  dimensions: [],
+  sections: [],
 };
 
 const populated: HistorySummary = {
@@ -28,6 +30,20 @@ const populated: HistorySummary = {
     { at: 3, grade: "B+" },
   ],
   avg: { passiveFraction: 0.3, fk: 13, fillerDensity: 2 },
+  dimensions: [
+    { key: "accessibility", avg: 7.5, direction: 1, recent: [7, 8] },
+    { key: "clarity", avg: 6, direction: -1, recent: [7, 5] },
+    { key: "flow", avg: 8, direction: 0, recent: [8, 8] },
+    { key: "precision", avg: 9, direction: 1, recent: [8, 10] },
+  ],
+  sections: [
+    {
+      section: "Introduction",
+      runs: 2,
+      latestGrade: "B+",
+      latestDims: { accessibility: 8, clarity: 5, flow: 8, precision: 10 },
+    },
+  ],
 };
 
 describe("renderLearn", () => {
@@ -47,6 +63,25 @@ describe("renderLearn", () => {
     expect(html).toContain("5×");
     expect(html).toContain("latest grade");
     expect(html).toContain("grade-chip");
+  });
+
+  it("renders the per-dimension trend with labels, scores, and directions", () => {
+    const html = renderLearn(defaultRubric.patterns, populated);
+    expect(html).toContain("By dimension");
+    expect(html).toContain("Accessibility");
+    expect(html).toContain("Clarity");
+    expect(html).toContain("Flow");
+    expect(html).toContain("Precision");
+    // average score out of 10
+    expect(html).toContain("9/10");
+    // direction glyphs: at least one rising (▲) and the slipping clarity (▼)
+    expect(html).toContain("▲");
+    expect(html).toContain("▼");
+    expect(html).toContain("—");
+  });
+
+  it("omits the dimension section when there are no dimensions (no runs)", () => {
+    expect(renderLearn(defaultRubric.patterns, empty)).not.toContain("By dimension");
   });
 
   it("themes text to the VS Code foreground (legible on dark themes)", () => {

@@ -36,7 +36,33 @@ export interface FileResult {
   violations: string[];
 }
 
-export function parseArgs(argv: string[]): CliOptions {
+/**
+ * How {@link parseArgs} reports a fatal usage error (a malformed numeric threshold).
+ * The default writes to stderr and exits with code 2 — matching the CLI's other
+ * usage failures — but tests inject a throwing stub so they can assert on the message
+ * without terminating the process.
+ */
+export type OnArgError = (message: string) => never;
+
+const defaultOnArgError: OnArgError = (message) => {
+  process.stderr.write(`limpid: ${message}\n`);
+  process.exit(2);
+};
+
+/**
+ * Parse a finite numeric threshold; abort via {@link OnArgError} on a missing or
+ * malformed value. Without this, `Number("abc")` is `NaN`, every `metric > NaN`
+ * comparison is false, and the gate silently passes — so a typo'd flag would let
+ * failing prose through CI unnoticed.
+ */
+function parseThreshold(flag: string, raw: string | undefined, onError: OnArgError): number {
+  if (raw === undefined) onError(`${flag} requires a numeric value`);
+  const n = Number(raw);
+  if (!Number.isFinite(n)) onError(`${flag} expects a finite number, got ${JSON.stringify(raw)}`);
+  return n;
+}
+
+export function parseArgs(argv: string[], onError: OnArgError = defaultOnArgError): CliOptions {
   const files: string[] = [];
   const thresholds: Thresholds = {};
   let json = false;
@@ -54,13 +80,13 @@ export function parseArgs(argv: string[]): CliOptions {
         break;
       }
       case "--max-passive":
-        thresholds.maxPassive = Number(argv[++i]);
+        thresholds.maxPassive = parseThreshold(a, argv[++i], onError);
         break;
       case "--max-fk":
-        thresholds.maxFk = Number(argv[++i]);
+        thresholds.maxFk = parseThreshold(a, argv[++i], onError);
         break;
       case "--max-filler":
-        thresholds.maxFiller = Number(argv[++i]);
+        thresholds.maxFiller = parseThreshold(a, argv[++i], onError);
         break;
       case "--min-grade":
         thresholds.minGrade = argv[++i];

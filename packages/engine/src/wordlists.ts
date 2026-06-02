@@ -1,180 +1,21 @@
 /**
- * Word lists ported faithfully from research-agora/scripts/writing_verify.py.
- * Keep these in sync with the Python source — they are the canonical lexicon.
+ * The engine's lexicon.
+ *
+ * The canonical word/phrase lists (filler, hedge, booster, weak-opener, …) live
+ * ONCE in `@coach/rubric` — the documented "canon as data" — and the engine
+ * imports and re-exports them here so there is a single source of truth. The
+ * lists that are purely engine-internal mechanics (irregular participles for the
+ * passive heuristic, be-verbs, the -ly adverb stoplist) stay local.
  */
 
-/** Filler words (single tokens), matched on word boundaries, case-insensitive. */
-export const FILLER_WORDS: readonly string[] = [
-  "basically",
-  "simply",
-  "just",
-  "actually",
-  "really",
-  "very",
-  "quite",
-  "rather",
-  "somewhat",
-  "perhaps",
-  "fairly",
-  "literally",
-  "essentially",
-  "obviously",
-  "clearly",
-  "certainly",
-  "definitely",
-  "practically",
-];
-
-/** Multi-word filler phrases, matched as substrings (longest first to avoid nesting). */
-export const FILLER_PHRASES: readonly string[] = [
-  "in order to",
-  "it should be noted that",
-  "it is important to note that",
-  "it is worth noting that",
-  "as a matter of fact",
-  "it goes without saying",
-  "needless to say",
-  "at the end of the day",
-  "for all intents and purposes",
-  "in the final analysis",
-  "it can be seen that",
-  "as we all know",
-  "it is well known that",
-  "it is interesting to note that",
-];
-
-/** Hedge words — these soften conviction (the engine reports density; the coach judges). */
-export const HEDGE_WORDS: readonly string[] = [
-  "might",
-  "may",
-  "could",
-  "possibly",
-  "potentially",
-  "perhaps",
-  "seemingly",
-  "apparently",
-  "arguably",
-  "presumably",
-  "conceivably",
-  "likely",
-  "unlikely",
-  "probable",
-  "plausible",
-];
-
-export const HEDGE_PHRASES: readonly string[] = [
-  "to some extent",
-  "in some cases",
-  "it is possible that",
-  "it seems that",
-  "it appears that",
-  "we believe that",
-  "it is likely that",
-  "we feel that",
-  "one might argue",
-  "it could be argued",
-  "there is reason to believe",
-];
-
-/**
- * Booster words — overclaiming intensifiers (mirrors the hedge axis).
- * Not in the Python source; added per the engine contract's boosterDensity metric,
- * drawn from the same register the filler list targets (no hype slogans).
- */
-export const BOOSTER_WORDS: readonly string[] = [
-  "clearly",
-  "obviously",
-  "undoubtedly",
-  "certainly",
-  "definitely",
-  "surely",
-  "evidently",
-  "undeniably",
-  "unquestionably",
-  "indisputably",
-  "absolutely",
-  "always",
-  "never",
-  "completely",
-  "totally",
-  "entirely",
-  "extremely",
-  "highly",
-  "vastly",
-  "significantly",
-];
-
-/** Weak sentence openers (prefix match on the lowercased, trimmed sentence). */
-export const WEAK_OPENERS: readonly string[] = [
-  "it is",
-  "it was",
-  "there is",
-  "there are",
-  "there was",
-  "there were",
-  "it has been",
-  "it should be noted",
-  "it is important",
-  "it is worth",
-  "it is interesting",
-  "it can be seen",
-  "as we all know",
-  "as is well known",
-];
-
-/** Expletive / be-verb openers, used by the weak-opener detector. */
-export const ML_JARGON: readonly string[] = [
-  "transformer",
-  "attention",
-  "self-attention",
-  "cross-attention",
-  "encoder",
-  "decoder",
-  "embedding",
-  "tokenizer",
-  "softmax",
-  "backpropagation",
-  "gradient descent",
-  "stochastic gradient descent",
-  "batch normalization",
-  "layer normalization",
-  "dropout",
-  "convolution",
-  "pooling",
-  "recurrent",
-  "lstm",
-  "gru",
-  "generative",
-  "discriminative",
-  "adversarial",
-  "contrastive",
-  "variational",
-  "autoencoder",
-  "diffusion",
-  "latent",
-  "fine-tuning",
-  "pre-training",
-  "transfer learning",
-  "regularization",
-  "overfitting",
-  "underfitting",
-  "hyperparameter",
-  "epoch",
-  "batch size",
-  "learning rate",
-  "loss function",
-  "objective function",
-  "optimization",
-  "inference",
-  "training",
-  "evaluation",
-  "equivariant",
-  "invariant",
-  "disentangled",
-  "causal",
-  "counterfactual",
-  "interventional",
-];
+export {
+  FILLER_WORDS,
+  FILLER_PHRASES,
+  HEDGE_WORDS,
+  HEDGE_PHRASES,
+  BOOSTER_WORDS,
+  WEAK_OPENERS,
+} from "@coach/rubric";
 
 /**
  * Irregular past participles for the passive heuristic.
@@ -303,4 +144,49 @@ export const ADVERB_STOPLIST: ReadonlySet<string> = new Set([
   "lonely",
   "friendly",
   "unlikely",
+]);
+
+/**
+ * Common all-caps English words and tokens that are NOT undefined acronyms.
+ * The acronym detector skips these so a stress-marked word ("NOT"), a section
+ * heading token ("METHODS"), or a settled initialism ("IID") is not flagged as
+ * a jargon cliff. Lowercased lookups; stored upper-case for readability.
+ */
+export const ACRONYM_STOPLIST: ReadonlySet<string> = new Set([
+  // Common all-caps English / discourse words people write for emphasis.
+  "A",
+  "I",
+  "OK",
+  "NOT",
+  "AND",
+  "OR",
+  "BUT",
+  "THE",
+  "ALL",
+  "ANY",
+  "YES",
+  "NO",
+  "TODO",
+  "FIXME",
+  "NOTE",
+  "WARNING",
+  // Section-heading tokens (a lone all-caps heading is not a jargon cliff).
+  "ABSTRACT",
+  "INTRODUCTION",
+  "METHODS",
+  "METHOD",
+  "RESULTS",
+  "DISCUSSION",
+  "CONCLUSION",
+  "CONCLUSIONS",
+  "RELATED",
+  "WORK",
+  "BACKGROUND",
+  "APPENDIX",
+  "REFERENCES",
+  "ACKNOWLEDGMENTS",
+  "ACKNOWLEDGEMENTS",
+  // Settled initialisms a reader does not need spelled out.
+  "IID",
+  "OK",
 ]);

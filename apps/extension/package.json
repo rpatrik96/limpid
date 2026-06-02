@@ -1,11 +1,16 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "private": true,
   "type": "module",
-  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
+  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why. Not a grammar/spell checker.",
   "publisher": "rpatrik96",
+  "license": "MIT",
+  "homepage": "https://github.com/rpatrik96/limpid#readme",
+  "bugs": {
+    "url": "https://github.com/rpatrik96/limpid/issues"
+  },
   "engines": {
     "vscode": "^1.91.0"
   },
@@ -123,7 +128,7 @@
         "limpid.reanalyzeOnSave": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Re-run the coach automatically when you save the file shown in the Coach view (re-analysis is triggered only on save, not on every keystroke). With an LLM provider this spends one request per save."
+          "markdownDescription": "Refresh the **deterministic** metrics when you save the file shown in the Coach view (only on save, never per-keystroke). This never spends an LLM request — the four writing lenses re-run only on an explicit Coach run, so a tight save loop can't burn your quota."
         },
         "limpid.diagnostics.enabled": {
           "type": "boolean",
@@ -203,7 +208,40 @@
           "contextualTitle": "Limpid"
         }
       ]
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "limpid.gettingStarted",
+        "title": "Get started with Limpid",
+        "description": "Coach a passage against good writing — and learn why.",
+        "steps": [
+          {
+            "id": "limpid.step.coach",
+            "title": "Coach a passage",
+            "description": "Open a `.tex` or `.md` file, select a paragraph (or nothing, for the whole file), and run the coach.\n[Coach this selection / section](command:limpid.coach)",
+            "media": {
+              "markdown": "media/walkthrough/coach.md"
+            }
+          },
+          {
+            "id": "limpid.step.provider",
+            "title": "Pick a language model (optional)",
+            "description": "The deterministic checks need no setup. The four judgment lenses use a model — free GitHub Copilot works, or set a key for any provider.\n[Set API Key…](command:limpid.setApiKey)",
+            "media": {
+              "markdown": "media/walkthrough/provider.md"
+            }
+          },
+          {
+            "id": "limpid.step.learn",
+            "title": "Learn the patterns",
+            "description": "Open the **Limpid** view in the Activity Bar. The **Learn** tab is a library of the named failure patterns and your trends over time.",
+            "media": {
+              "markdown": "media/walkthrough/learn.md"
+            }
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.config.mjs",

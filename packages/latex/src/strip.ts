@@ -70,6 +70,66 @@ export function stripComment(line: string): string {
 const BEGIN_RE = /\\begin\s*\{([a-zA-Z*]+)\}/;
 const END_RE = /\\end\s*\{([a-zA-Z*]+)\}/;
 
+/** An open multi-line display-math region awaiting its closer (`\]` or `$$`). */
+type MathState = "bracket" | "dollar" | null;
+
+/**
+ * Drop multi-line display math on a single line, given the region state on entry.
+ *
+ * Handles `\[ … \]` and `$$ … $$` that SPAN lines: an opener with no closer on the
+ * same line enters a drop region; subsequent lines are dropped until the closer.
+ * Prose before an opener and after a closer is kept. Single-line display math
+ * (opener and closer on one line) is left untouched here — phase-2's line regexes
+ * strip it — so existing single-line behaviour is preserved.
+ */
+export function processDisplayMath(
+  line: string,
+  state: MathState,
+): { text: string; state: MathState } {
+  let rest = line;
+  let kept = "";
+
+  for (;;) {
+    if (state === "bracket") {
+      const close = rest.indexOf("\\]");
+      if (close === -1) return { text: kept, state }; // whole remainder is inside math
+      rest = rest.slice(close + 2);
+      state = null;
+      continue;
+    }
+    if (state === "dollar") {
+      const close = rest.indexOf("$$");
+      if (close === -1) return { text: kept, state };
+      rest = rest.slice(close + 2);
+      state = null;
+      continue;
+    }
+
+    // Not inside a region: find the earliest display opener (`\[` or `$$`).
+    const br = rest.indexOf("\\[");
+    const dl = rest.indexOf("$$");
+    if (br === -1 && dl === -1) return { text: kept + rest, state: null };
+
+    const useBracket = dl === -1 || (br !== -1 && br < dl);
+    const openAt = useBracket ? br : dl;
+    const openLen = 2;
+    const closer = useBracket ? "\\]" : "$$";
+    const before = rest.slice(0, openAt);
+    const afterOpen = rest.slice(openAt + openLen);
+    const closeAt = afterOpen.indexOf(closer);
+
+    if (closeAt === -1) {
+      // Unbalanced opener: keep the prose before it, enter the region, drop the rest.
+      kept += before;
+      return { text: kept, state: useBracket ? "bracket" : "dollar" };
+    }
+
+    // Single-line display math: leave the opener…closer intact for phase-2, keep scanning.
+    kept += before + rest.slice(openAt, openAt + openLen + closeAt + closer.length);
+    rest = afterOpen.slice(closeAt + closer.length);
+  }
+}
+
 /**
  * Phase 1 — comment removal + drop of non-prose block environments, line-aware.
  *
@@ -82,6 +142,8 @@ export function preprocessLines(tex: string): SourceLine[] {
   const out: SourceLine[] = [];
   // Stack of currently-open dropped environments (handles nesting, e.g. tabular in table).
   const dropStack: string[] = [];
+  // Open multi-line display-math region (`\[..\]` / `$$..$$`) awaiting its closer.
+  let mathState: MathState = null;
 
   for (let i = 0; i < rawLines.length; i++) {
     const sourceLine = i + 1;
@@ -97,7 +159,22 @@ export function preprocessLines(tex: string): SourceLine[] {
       continue;
     }
 
-    // Not inside a dropped env. Does this line OPEN one?
+    // Inside an open multi-line display-math region: drop until the closer, keeping
+    // any prose that follows it on the closing line.
+    if (mathState !== null) {
+      const dm = processDisplayMath(line, mathState);
+      mathState = dm.state;
+      if (mathState !== null && dm.text.length === 0) {
+        // Still open and nothing survived: the whole line was math → drop it
+        // (no blank line, mirroring a long dropped-environment body).
+        continue;
+      }
+      // Closed (and/or a fresh region opened) on this line: keep the surviving prose.
+      out.push({ text: dm.text, sourceLine });
+      continue;
+    }
+
+    // Not inside a dropped env or math region. Does this line OPEN one?
     const begin = BEGIN_RE.exec(line);
     if (begin && DROP_ENV_SET.has(begin[1] ?? "")) {
       // Push and consume the rest of the line for further nested transitions.
@@ -111,7 +188,11 @@ export function preprocessLines(tex: string): SourceLine[] {
       continue;
     }
 
-    out.push({ text: line, sourceLine });
+    // Drop any unbalanced multi-line display math, keeping prose around it. A balanced
+    // single-line `\[..\]` / `$$..$$` is left intact for phase-2.
+    const dm = processDisplayMath(line, null);
+    mathState = dm.state;
+    out.push({ text: dm.text, sourceLine });
   }
 
   return out;
@@ -203,6 +284,11 @@ export function transformInline(line: string): string {
   t = t.replace(/\$\$[^$]*\$\$/g, " ");
   t = t.replace(INLINE_PAREN_MATH, " ");
   t = t.replace(INLINE_DOLLAR, " ");
+  // A stray unmatched math `$` (odd delimiter run, or the residual of a multi-line
+  // region) survives the paired replacers above — drop it so it never leaks as prose.
+  // An *escaped* `\$` literal (a real dollar sign) is preserved: ESCAPED_SPECIAL below
+  // unescapes it only after this point, so the `\$` is still intact here.
+  t = t.replace(/(^|[^\\])\$+/g, "$1");
 
   // Unwrap text-bearing formatting wrappers (may nest one level): keep the argument.
   for (let pass = 0; pass < 3; pass++) {

@@ -3,7 +3,7 @@
  * raw `.tex`, with SOURCE offsets — powering "Coach a section…". Title classification
  * and the shared {@link SourceSection} shape live in `@coach/extract-core`.
  */
-import { classifyTitle, type SourceSection } from "@coach/extract-core";
+import { buildNestedSections, classifyTitle, type SourceSection } from "@coach/extract-core";
 
 export { classifyTitle };
 export type { SourceSection };
@@ -51,26 +51,12 @@ export function findSourceSections(tex: string): SourceSection[] {
     cmdRe.lastIndex = after;
   }
 
-  const sections: SourceSection[] = [];
-  for (let i = 0; i < heads.length; i++) {
-    const h = heads[i]!;
-    let end = tex.length;
-    for (let j = i + 1; j < heads.length; j++) {
-      if (heads[j]!.level <= h.level) {
-        end = heads[j]!.start;
-        break;
-      }
-    }
-    sections.push({
-      title: h.title,
-      kind: classifyTitle(h.title),
-      command: h.command,
-      level: h.level,
-      start: h.start,
-      end,
-    });
-  }
+  // The sectioning units nest by level; the shared builder owns that "span runs to
+  // the next same-or-higher heading" logic.
+  const sections = buildNestedSections(heads, tex.length);
 
+  // The abstract environment is delimited explicitly by its \begin/\end, so it is
+  // appended with that exact span rather than the nesting rule.
   const absRe = /\\begin\{abstract\}/g;
   while ((m = absRe.exec(tex)) !== null) {
     const endRe = /\\end\{abstract\}/g;

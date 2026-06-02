@@ -14,9 +14,11 @@
  *
  * Pure: no `vscode`, no network, no `fs`.
  */
-import type { SourceLine } from "@coach/extract-core";
+import { lineStartOffsets, type SourceLine } from "@coach/extract-core";
 
 export type { SourceLine };
+/** Re-export the shared offset helper so callers inside this package have it locally. */
+export { lineStartOffsets };
 
 /** A heading found by {@link scanStructure}: 0-based physical line, level 1–6, title. */
 export interface Heading {
@@ -59,15 +61,6 @@ export function splitLines(md: string): string[] {
  */
 export function blankHtmlComments(md: string): string {
   return md.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, " "));
-}
-
-/** Start offset of each line in `source` (index i ⇒ offset of line i+1). */
-export function lineStartOffsets(source: string): number[] {
-  const starts = [0];
-  for (let i = 0; i < source.length; i++) {
-    if (source[i] === "\n") starts.push(i + 1);
-  }
-  return starts;
 }
 
 /** Detect a top-of-document YAML (`---`) / TOML (`+++`) frontmatter block, if any. */

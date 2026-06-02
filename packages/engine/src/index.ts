@@ -168,7 +168,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   // Filler phrases (deterministic).
   for (const h of fillerPhraseHits) {
     findings.push({
-      ruleId: "strunk.omit-needless-phrases",
+      ruleId: "strunk.omit-needless-words",
       category: "precision",
       method: "deterministic",
       severity: "suggestion",
@@ -187,7 +187,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   // Weak openers (deterministic).
   for (const w of weakOpeners) {
     findings.push({
-      ruleId: "strunk.weak-opener",
+      ruleId: "strunk.expletive-openers",
       patternName: "Weak Opener",
       category: "clarity",
       method: "deterministic",
@@ -204,7 +204,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   // Passive (heuristic, low confidence).
   for (const p of passiveSentences) {
     findings.push({
-      ruleId: "orwell.prefer-active-voice",
+      ruleId: "orwell.active-voice",
       patternName: "Passive Voice",
       category: "clarity",
       method: "heuristic",
@@ -221,7 +221,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   // Adverb overuse (heuristic, doc-level + per-token spans).
   if (per100(adverbCount) > ADVERB_OVERUSE_THRESHOLD && adverbHits.length > 0) {
     findings.push({
-      ruleId: "hemingway.adverb-overuse",
+      ruleId: "writersdiet.adjectives",
       patternName: "Adverb Overuse",
       category: "precision",
       method: "heuristic",
@@ -238,7 +238,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
   // Undefined acronyms (deterministic — definite once we see use-before-definition).
   for (const u of undefinedUses) {
     findings.push({
-      ruleId: "clarity.undefined-acronym",
+      ruleId: "economist.acronym-penalty",
       patternName: "Undefined Acronym",
       category: "accessibility",
       method: "deterministic",

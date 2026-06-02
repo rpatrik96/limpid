@@ -33,4 +33,16 @@ describe("runDetector", () => {
     expect(runDetector({ kind: "words", words: [] }, "x")).toEqual([]);
     expect(runDetector({ kind: "opener", prefixes: [] }, "x")).toEqual([]);
   });
+
+  it("regex: refuses a ReDoS-shaped pattern and returns quickly instead of hanging", () => {
+    // `(a+)+$` on a run of 'a's that fails to match is the canonical catastrophic
+    // backtracking case — synchronous JS regex would never return. The detector
+    // must reject the pattern up front (fail soft → no matches) and return fast.
+    const evil = "a".repeat(40); // enough to hang an unguarded engine for ~forever
+    const start = Date.now();
+    const matches = runDetector({ kind: "regex", pattern: "(a+)+$" }, evil + "!");
+    const elapsed = Date.now() - start;
+    expect(matches).toEqual([]);
+    expect(elapsed).toBeLessThan(100);
+  });
 });

@@ -45,6 +45,7 @@ import { buildLensRequest } from "./prompts.js";
 import { parseLensResult, type LensResult } from "./lenses.js";
 import { lensResultToFindings } from "./findings.js";
 import { applyVoiceGuards } from "./voiceGuards.js";
+import { runRubricDetectors } from "./rubricRules.js";
 
 export { MockLanguageModel, defaultLensResult } from "./mock.js";
 export type { MockLanguageModelOptions } from "./mock.js";
@@ -60,6 +61,7 @@ export {
 } from "./scoring.js";
 export { buildLensRequest } from "./prompts.js";
 export { applyVoiceGuards } from "./voiceGuards.js";
+export { runRubricDetectors, BUILTIN_ENGINE_RULE_IDS } from "./rubricRules.js";
 export { parseLensResult, extractJson, coerceSeverity, coerceSpans } from "./lenses.js";
 export type { LensResult, LensFinding, LensAltitude, LensPatternHit } from "./lenses.js";
 export { lensResultToFindings } from "./findings.js";
@@ -207,7 +209,13 @@ class CoachImpl implements Coach {
     const precision = precisionScore(lensResult);
 
     // ── 4. Voice guards over the COMBINED finding set ────────────────────────
-    const combined: Finding[] = [...engine.findings, ...lensFindings];
+    // Rubric rules with a deterministic/heuristic detector (the canon as data,
+    // plus anything the user added to .limpid/rules.json) fire here too — the
+    // engine covers the built-in checks, so we run only the ADDITIONAL detector
+    // rules (skipping any ruleId the engine already emitted) and merge them.
+    const engineRuleIds = new Set(engine.findings.map((f) => f.ruleId));
+    const rubricFindings = runRubricDetectors(rubric, text, engineRuleIds);
+    const combined: Finding[] = [...engine.findings, ...rubricFindings, ...lensFindings];
     const guarded = applyVoiceGuards(combined, rubric, lowProseConfidence);
     if (guarded.suppressed.length > 0) {
       const guardNote = `${guarded.suppressed.length} finding(s) adjusted by voice guards.`;

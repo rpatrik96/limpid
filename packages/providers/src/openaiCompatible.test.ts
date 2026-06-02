@@ -98,4 +98,32 @@ describe("OpenAICompatibleModel.complete", () => {
     });
     await expect(model.complete({ prompt: "p" })).rejects.toThrow(/401/);
   });
+
+  it("aborts and rejects (rather than hanging) when the endpoint stalls past timeoutMs", async () => {
+    // A stalled fetch that only settles when its AbortSignal fires — mirroring
+    // how the real fetch rejects on abort. Without the timeout it never resolves.
+    const fetchFn: FetchLike = (_url, init) =>
+      new Promise<FetchResponseLike>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("aborted")));
+      });
+    const model = new OpenAICompatibleModel({
+      baseURL: "https://x/v1",
+      apiKey: "k",
+      model: "m",
+      timeoutMs: 10,
+      fetchFn,
+    });
+    await expect(model.complete({ prompt: "p" })).rejects.toThrow(/timed out after 10ms/);
+  });
+
+  it("passes the abort signal through to the fetch call", async () => {
+    let sawSignal = false;
+    const fetchFn: FetchLike = async (_url, init) => {
+      sawSignal = init.signal instanceof AbortSignal;
+      return fakeResponse({ choices: [{ message: { content: "ok" } }] });
+    };
+    const model = new OpenAICompatibleModel({ baseURL: "https://x/v1", model: "m", fetchFn });
+    await model.complete({ prompt: "p" });
+    expect(sawSignal).toBe(true);
+  });
 });

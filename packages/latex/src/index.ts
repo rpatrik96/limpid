@@ -23,7 +23,13 @@ import {
 
 import { preprocessLines, transformInline, type SourceLine } from "./strip.js";
 
-export { preprocessLines, transformInline, stripComment, type SourceLine } from "./strip.js";
+export {
+  preprocessLines,
+  transformInline,
+  stripComment,
+  processDisplayMath,
+  type SourceLine,
+} from "./strip.js";
 export { findSourceSections } from "./sections.js";
 export type { SourceSection } from "./sections.js";
 export { classifyTitle, locateSpanInSource };

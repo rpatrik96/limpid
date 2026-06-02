@@ -115,14 +115,19 @@ export function registerDiagnostics(context: vscode.ExtensionContext): void {
     vscode.languages.registerCodeActionsProvider(
       selector,
       {
-        provideCodeActions(_doc, _range, ctx) {
+        provideCodeActions(doc, _range, ctx) {
           const ours = ctx.diagnostics.filter((d) => d.source === SOURCE);
           if (ours.length === 0) return undefined;
           const action = new vscode.CodeAction(
             "Coach this in Limpid",
             vscode.CodeActionKind.QuickFix,
           );
-          action.command = { command: "limpid.coach", title: "Coach this in Limpid" };
+          // Coach exactly the flagged range, not the whole file.
+          action.command = {
+            command: "limpid.coachRange",
+            title: "Coach this in Limpid",
+            arguments: [doc.uri, ours[0]!.range],
+          };
           action.diagnostics = [...ours];
           return [action];
         },

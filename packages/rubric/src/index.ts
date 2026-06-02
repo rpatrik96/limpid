@@ -30,9 +30,25 @@ export const defaultRubric: RubricConfig = {
 
 export { dimensions, thresholds, rules, patterns, voiceGuards, gradeBands };
 
-export { runDetector } from "./detector.js";
+export { runDetector, MAX_REGEX_INPUT_LENGTH } from "./detector.js";
 export type { DetectorMatch } from "./detector.js";
-export { parseUserRules, mergeRubric } from "./userRules.js";
+export {
+  parseUserRules,
+  mergeRubric,
+  isSafeUserRegex,
+  MAX_USER_PATTERN_LENGTH,
+} from "./userRules.js";
 export type { ParseResult } from "./userRules.js";
 export { rubricForRegister, registerNote, REGISTERS } from "./register.js";
 export type { Register } from "./register.js";
+
+export {
+  FILLER_WORDS,
+  FILLER_PHRASES,
+  HEDGE_WORDS,
+  HEDGE_PHRASES,
+  WEAK_OPENERS,
+  BOOSTER_WORDS,
+  HYPE_WORDS,
+  CLICHES,
+} from "./wordlists.js";

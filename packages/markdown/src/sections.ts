@@ -5,9 +5,14 @@
  * includes its nested `h2`/`h3`. Title classification + the shared {@link SourceSection}
  * shape live in `@coach/extract-core`.
  */
-import { classifyTitle, type SourceSection } from "@coach/extract-core";
+import {
+  buildNestedSections,
+  classifyTitle,
+  lineStartOffsets,
+  type SourceSection,
+} from "@coach/extract-core";
 
-import { lineStartOffsets, scanStructure } from "./strip.js";
+import { scanStructure } from "./strip.js";
 
 export { classifyTitle };
 export type { SourceSection };
@@ -17,25 +22,13 @@ export function findSourceSections(md: string): SourceSection[] {
   if (headings.length === 0) return [];
   const lineStart = lineStartOffsets(md);
 
-  const out: SourceSection[] = [];
-  for (let k = 0; k < headings.length; k++) {
-    const h = headings[k]!;
-    const start = lineStart[h.line] ?? 0;
-    let end = md.length;
-    for (let j = k + 1; j < headings.length; j++) {
-      if (headings[j]!.level <= h.level) {
-        end = lineStart[headings[j]!.line] ?? md.length;
-        break;
-      }
-    }
-    out.push({
-      title: h.title,
-      kind: classifyTitle(h.title),
-      command: `h${h.level}`,
-      level: h.level,
-      start,
-      end,
-    });
-  }
-  return out;
+  // Collect the head set (the Markdown-specific step), then defer the nesting rule
+  // to the shared builder.
+  const heads = headings.map((h) => ({
+    title: h.title,
+    command: `h${h.level}`,
+    level: h.level,
+    start: lineStart[h.line] ?? 0,
+  }));
+  return buildNestedSections(heads, md.length);
 }

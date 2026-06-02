@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CliRunner } from "./cliModel.js";
-import { ClaudeCliModel, parseClaudeResult } from "./cliModel.js";
+import { ClaudeCliModel, defaultRunner, parseClaudeResult } from "./cliModel.js";
 
 describe("parseClaudeResult", () => {
   it("reads the result field from JSON output", () => {
@@ -39,5 +39,30 @@ describe("ClaudeCliModel.complete", () => {
     };
     const model = new ClaudeCliModel({ runner });
     await expect(model.complete({ prompt: "p" })).rejects.toThrow(/ENOENT/);
+  });
+});
+
+describe("defaultRunner EPIPE handling", () => {
+  // A child that exits immediately closes its stdin before we finish piping a
+  // large prompt, so the write hits EPIPE. Without the stdin 'error' listener
+  // this rejects the host's unhandledRejection / crashes the extension host;
+  // with it, the promise settles deterministically (here: rejects on exit code).
+  it("does not throw an unhandled error when the child exits while we write a large stdin", async () => {
+    // ~5MB overflows the pipe buffer so the write is still in flight at exit.
+    const bigStdin = "x".repeat(5_000_000);
+
+    // `true` exits 0 immediately without reading stdin (POSIX); on win32 use `cmd /c exit 0`.
+    const isWin = process.platform === "win32";
+    const command = isWin ? "cmd" : "true";
+    const args = isWin ? ["/c", "exit", "0"] : [];
+
+    const settled = await defaultRunner(command, args, bigStdin, 5_000).then(
+      () => "resolved" as const,
+      () => "rejected" as const,
+    );
+
+    // Either outcome is fine — the point is the promise SETTLES instead of
+    // crashing the process with an unhandled EPIPE on child.stdin.
+    expect(["resolved", "rejected"]).toContain(settled);
   });
 });

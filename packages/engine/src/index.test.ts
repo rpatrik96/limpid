@@ -44,7 +44,7 @@ describe("analyze — end to end", () => {
 
   it("flags filler phrases", () => {
     const r = analyze("We did this in order to improve recall.");
-    const phrases = byRule(r.findings, "strunk.omit-needless-phrases");
+    const phrases = byRule(r.findings, "strunk.omit-needless-words");
     expect(phrases).toHaveLength(1);
     expect(phrases[0]!.suggestion).toContain('"to"');
   });
@@ -52,7 +52,7 @@ describe("analyze — end to end", () => {
   it("flags a weak opener and counts it in metrics", () => {
     const text = "There is a gap in the literature.";
     const r = analyze(text);
-    const weak = byRule(r.findings, "strunk.weak-opener");
+    const weak = byRule(r.findings, "strunk.expletive-openers");
     expect(weak).toHaveLength(1);
     expect(r.metrics.weakOpenerCount).toBe(1);
     // span covers the whole sentence
@@ -61,7 +61,7 @@ describe("analyze — end to end", () => {
 
   it("flags passive heuristically with confidence ~0.6", () => {
     const r = analyze("The model was trained on a large corpus.");
-    const passive = byRule(r.findings, "orwell.prefer-active-voice");
+    const passive = byRule(r.findings, "orwell.active-voice");
     expect(passive).toHaveLength(1);
     expect(passive[0]!.method).toBe("heuristic");
     expect(passive[0]!.confidence).toBeCloseTo(0.6, 5);
@@ -70,21 +70,21 @@ describe("analyze — end to end", () => {
 
   it("does NOT flag copular 'is + adjective' as passive", () => {
     const r = analyze("The result is important. The bound is tight.");
-    expect(byRule(r.findings, "orwell.prefer-active-voice")).toHaveLength(0);
+    expect(byRule(r.findings, "orwell.active-voice")).toHaveLength(0);
     expect(r.metrics.passiveFraction).toBe(0);
   });
 
   it("does not count terms-of-art as adverbs", () => {
     const r = analyze("The optimization improves the distribution and inference.");
     expect(r.metrics.adverbDensity).toBe(0);
-    expect(byRule(r.findings, "hemingway.adverb-overuse")).toHaveLength(0);
+    expect(byRule(r.findings, "writersdiet.adjectives")).toHaveLength(0);
   });
 
   it("flags adverb overuse only above threshold", () => {
     const text = "It quickly slowly carefully poorly badly rapidly converged.";
     const r = analyze(text);
     expect(r.metrics.adverbDensity).toBeGreaterThan(4);
-    expect(byRule(r.findings, "hemingway.adverb-overuse")).toHaveLength(1);
+    expect(byRule(r.findings, "writersdiet.adjectives")).toHaveLength(1);
   });
 
   it("flags an acronym used before definition, not after", () => {
@@ -92,7 +92,7 @@ describe("analyze — end to end", () => {
       "We use the GAN here. A Generative Adversarial Network (GAN) follows. The GAN improves.";
     const r = analyze(text);
     expect(r.metrics.undefinedAcronyms).toContain("GAN");
-    const acro = byRule(r.findings, "clarity.undefined-acronym");
+    const acro = byRule(r.findings, "economist.acronym-penalty");
     // only the pre-definition use is flagged
     expect(acro).toHaveLength(1);
     expect(text.slice(acro[0]!.spans[0]!.start, acro[0]!.spans[0]!.end)).toBe("GAN");
