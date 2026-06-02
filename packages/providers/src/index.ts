@@ -17,7 +17,7 @@ export type { ClaudeModelConfig } from "./claude.js";
 export { ClaudeCliModel, parseClaudeResult, defaultRunner } from "./cliModel.js";
 export type { CliRunner, ClaudeCliConfig } from "./cliModel.js";
 
-export { OPENAI_PRESETS, buildPresetModel } from "./presets.js";
+export { OPENAI_PRESETS, buildPresetModel, SECRET_SLOTS } from "./presets.js";
 export type { ProviderPreset } from "./presets.js";
 
 export { fromEnv } from "./env.js";

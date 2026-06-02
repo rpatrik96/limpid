@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-368-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-374-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -145,7 +145,33 @@ just without the four LLM lenses.
 
 **Keys live in the OS keychain, never settings.** Run **“Limpid: Set API Key”** to
 store one (masked input → `SecretStorage`), and **“Limpid: Clear API Key”** to
-remove it. The keyless paths (Copilot, Claude Code CLI, Ollama) need no key at all.
+remove it (the picker shows which slots already hold a key). The keyless paths
+(Copilot, Claude Code CLI, Ollama) need no key at all.
+
+### Bring your own key
+
+Limpid never bundles a key — every paid provider is bring-your-own. Set `limpid.provider`,
+then store the matching key with **Limpid: Set API Key**:
+
+- **Anthropic** — `limpid.provider: anthropic`, key slot `anthropic`.
+- **OpenAI / OpenRouter / Groq / Together / Mistral** — `limpid.provider: <name>`, key slot
+  `<name>`. Override the model with `limpid.model` (e.g. `gpt-4o`, `mistral-large-latest`).
+- **Any other OpenAI-compatible endpoint** (DeepSeek, Fireworks, xAI/Grok, Perplexity, Cerebras,
+  Azure OpenAI, Gemini's OpenAI-compatible endpoint, a local proxy…) — set `limpid.provider:
+openai-compatible`, point `limpid.openaiCompatible.baseURL` at the endpoint, set
+  `limpid.openaiCompatible.model`, and store the key under the **`openai-compatible`** slot. For
+  example, for DeepSeek:
+
+  ```jsonc
+  // settings.json
+  "limpid.provider": "openai-compatible",
+  "limpid.openaiCompatible.baseURL": "https://api.deepseek.com/v1",
+  "limpid.openaiCompatible.model": "deepseek-chat"
+  // then: Limpid: Set API Key → openai-compatible → paste your key
+  ```
+
+  The custom endpoint has its own key slot, so it never clobbers your OpenAI key; a keyless
+  local proxy needs no key at all.
 
 > **Copilot Free is enough to start.** Sign into GitHub in VS Code and enable
 > Copilot (Free plan, no card); the first coach run asks for one-time consent. It's
@@ -191,7 +217,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 368 vitest tests across core + extension
+npm test            # 374 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses

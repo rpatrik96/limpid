@@ -1,7 +1,7 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why. Not a grammar/spell checker.",
@@ -153,7 +153,7 @@
         "limpid.openaiCompatible.baseURL": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Base URL for a custom OpenAI-compatible endpoint (used when `limpid.provider` = `openai-compatible`). Reuses the `openai` key slot if a key is needed."
+          "markdownDescription": "Base URL for a custom OpenAI-compatible endpoint (used when `limpid.provider` = `openai-compatible`) — e.g. DeepSeek, Fireworks, xAI, Azure OpenAI, or a local proxy. Store its key under the **openai-compatible** slot via **Limpid: Set API Key** (falls back to the `openai` slot for back-compat); a keyless proxy needs none."
         },
         "limpid.openaiCompatible.model": {
           "type": "string",

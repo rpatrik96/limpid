@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.14]
+
+### Added
+
+- **Bring-your-own-key for any OpenAI-compatible provider.** The custom endpoint
+  (`limpid.provider: openai-compatible`) now has its **own** `openai-compatible` key
+  slot instead of borrowing the `openai` one — so you can point
+  `limpid.openaiCompatible.baseURL` at DeepSeek, Fireworks, xAI, Perplexity, Cerebras,
+  Azure OpenAI, Gemini's OpenAI-compatible endpoint, or a local proxy and store its key
+  without clobbering a real OpenAI key (it falls back to the `openai` slot for
+  back-compat, and a keyless proxy needs none). Documented as a **Bring your own key**
+  section in the README.
+
+### Changed
+
+- The **Set/Clear API Key** picker now lists every key slot with what it's for and
+  whether a key is already stored, and is driven by a single canonical `SECRET_SLOTS`
+  list in `@coach/providers` so it can't drift from the wired-up providers.
+
 ## [0.0.13]
 
 ### Added

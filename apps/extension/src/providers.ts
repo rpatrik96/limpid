@@ -81,7 +81,10 @@ async function buildAnthropic(context: vscode.ExtensionContext): Promise<Languag
 async function buildCustom(context: vscode.ExtensionContext): Promise<LanguageModel | null> {
   const baseURL = cfg<string>("openaiCompatible.baseURL")?.trim();
   if (!baseURL) return null;
-  const apiKey = await getApiKey(context, "openai"); // reuse the openai key slot for a custom endpoint
+  // Prefer the endpoint's own key slot; fall back to the `openai` slot for
+  // back-compat with versions that reused it (a custom endpoint may also be keyless).
+  const apiKey =
+    (await getApiKey(context, "openai-compatible")) || (await getApiKey(context, "openai"));
   const model = modelOverride() ?? (cfg<string>("openaiCompatible.model")?.trim() || "gpt-4o-mini");
   return new OpenAICompatibleModel({
     baseURL,

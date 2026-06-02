@@ -66,6 +66,19 @@ export const OPENAI_PRESETS: Record<string, ProviderPreset> = {
   },
 };
 
+/**
+ * Canonical list of API-key slots the host stores in the OS keychain (namespaced
+ * `limpid.apiKey.<slot>`). Anthropic (Claude API), every OpenAI-compatible preset,
+ * and a dedicated slot for a user's own OpenAI-compatible endpoint. Derived from
+ * {@link OPENAI_PRESETS} so the Set/Clear-API-Key picker can never drift from the
+ * providers actually wired up. Keyless paths (Copilot, Claude-CLI, Ollama) are absent.
+ */
+export const SECRET_SLOTS: readonly string[] = [
+  "anthropic",
+  ...Object.keys(OPENAI_PRESETS),
+  "openai-compatible",
+];
+
 /** Build a model from a preset, with an optional API key and model override. */
 export function buildPresetModel(
   preset: ProviderPreset,
