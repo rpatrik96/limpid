@@ -27,7 +27,8 @@ under the quotation right — 17 U.S.C. § 107 in the United States, § 51 UrhG 
 (with the source named as § 63 UrhG requires), Art. 5(3)(d) of Directive 2001/29/EC in the
 rest of the EU.
 
-> [!important] Cite Strunk 1918, not Strunk & White
+> [!IMPORTANT]
+> **Cite Strunk 1918, not Strunk & White.**
 > Both quoted Strunk passages come from the 1918 first edition, which is in the public
 > domain. E. B. White's 1959 revision (Macmillan; 4th ed. Longman, 2000) is still in
 > copyright and is **not** quoted here. Where this repository gives two rule numbers —
