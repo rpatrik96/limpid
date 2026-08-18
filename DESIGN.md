@@ -75,11 +75,13 @@ grade + altitude banner.
 
 Dimensions and weights mirror the deployed MVP: **Accessibility 20%, Clarity 30%, Flow 20%,
 Precision 30%** (Precision is the LLM dimension). Section thresholds: abstract FK 10–14 / passive
-< 15%; methods FK ≤ 18 / passive ≤ 35%. Rule sources: Orwell's six, Strunk & White (omit needless
+< 15%; methods FK ≤ 18 / passive ≤ 35%. Rule sources: Orwell's six, Strunk 1918 (omit needless
 words, active voice, expletive openers), the Economist (read-twice penalty, acronym penalty, redundant
 temporals), the Writer's Diet (bloat categories), Gopen & Swan (stress/topic position,
-old→new — the LLM lenses), Pinker (curse-of-knowledge). Two vault gaps the exploration found —
-no `[[Strunk&White]]` note, no Gopen–Swan note — are authored here as rule sources.
+old→new — the LLM lenses), Pinker (curse-of-knowledge). The Strunk and Gopen–Swan grounding notes
+are written for this repo rather than ported from `research-agora`; they live in
+[`packages/rubric/sources/`](packages/rubric/sources/), and [NOTICE.md](NOTICE.md) records what each
+source contributes and its copyright status.
 
 ## Staging
 
