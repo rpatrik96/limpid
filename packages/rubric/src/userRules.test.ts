@@ -97,8 +97,80 @@ describe("isSafeUserRegex — ReDoS guard", () => {
         },
       ],
     });
-    // The whole rule is dropped because its only detector is unsafe.
-    expect(r.rules.find((x) => x.id === "evil.redos")?.detector).toBeUndefined();
+    // The whole rule is dropped because its only detector is unsafe, and the
+    // drop is reported rather than silent.
+    expect(r.rules.find((x) => x.id === "evil.redos")).toBeUndefined();
+    expect(r.errors.some((e) => e.includes("evil.redos") && e.includes("detector"))).toBe(true);
+  });
+
+  // A detector whose payload key is misspelled used to be dropped silently: the
+  // rule loaded, reported nothing, and never fired. These lock the loud path.
+  describe("an invalid detector is an error, not a silently inert rule", () => {
+    const ruleWith = (detector: unknown) => ({
+      rules: [
+        {
+          id: "house.mistyped",
+          name: "Mistyped",
+          category: "clarity",
+          source: "house style",
+          method: "deterministic",
+          severity: "warning",
+          rationale: "r",
+          detector,
+        },
+      ],
+    });
+
+    it("names the payload key the kind actually reads", () => {
+      // "words" is the shape people guess for every kind; "phrases" reads "phrases".
+      const r = parseUserRules(ruleWith({ kind: "phrases", words: ["low-hanging fruit"] }));
+      expect(r.rules).toHaveLength(0);
+      expect(r.errors[0]).toContain('kind "phrases" needs a non-empty "phrases" array');
+      expect(r.errors[0]).toContain('"words"');
+    });
+
+    it("names the payload key for an opener", () => {
+      const r = parseUserRules(ruleWith({ kind: "opener", words: ["There is"] }));
+      expect(r.rules).toHaveLength(0);
+      expect(r.errors[0]).toContain('needs a non-empty "prefixes" array');
+    });
+
+    it("reports an unknown kind and lists the valid ones", () => {
+      const r = parseUserRules(ruleWith({ kind: "substring", phrases: ["x"] }));
+      expect(r.rules).toHaveLength(0);
+      expect(r.errors[0]).toContain("words|phrases|opener|regex");
+      expect(r.errors[0]).toContain('"substring"');
+    });
+
+    it("reports a regex detector with no pattern", () => {
+      const r = parseUserRules(ruleWith({ kind: "regex", flags: "gi" }));
+      expect(r.rules).toHaveLength(0);
+      expect(r.errors[0]).toContain('needs a non-empty "pattern" string');
+    });
+
+    it("reports an over-long regex distinctly from an unsafe one", () => {
+      const r = parseUserRules(ruleWith({ kind: "regex", pattern: "a".repeat(501) }));
+      expect(r.rules).toHaveLength(0);
+      expect(r.errors[0]).toContain("exceeds 500 characters");
+    });
+
+    it("leaves an llm rule with no detector key untouched", () => {
+      const r = parseUserRules({
+        rules: [
+          {
+            id: "house.judgment",
+            name: "Judgment",
+            category: "clarity",
+            source: "house style",
+            method: "llm",
+            severity: "suggestion",
+            rationale: "needs a reader model",
+          },
+        ],
+      });
+      expect(r.errors).toHaveLength(0);
+      expect(r.rules[0]?.detector).toBeUndefined();
+    });
   });
 
   it("rejects a pathological pattern quickly (no synchronous hang)", () => {

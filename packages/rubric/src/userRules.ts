@@ -48,34 +48,72 @@ export function isSafeUserRegex(pattern: string): boolean {
   return true;
 }
 
-function validateDetector(v: unknown): RuleDetector | undefined {
-  if (!isObj(v)) return undefined;
-  switch (v["kind"]) {
-    case "words": {
-      const words = strArray(v["words"]);
-      return words.length ? { kind: "words", words } : undefined;
-    }
-    case "phrases": {
-      const phrases = strArray(v["phrases"]);
-      return phrases.length ? { kind: "phrases", phrases } : undefined;
-    }
+/** The payload key each detector kind reads, for the "you meant this" error. */
+const DETECTOR_PAYLOAD: Record<string, string> = {
+  words: "words",
+  phrases: "phrases",
+  opener: "prefixes",
+};
+
+/**
+ * Validate a user-supplied detector into either a detector or the reason it
+ * failed. The reason matters: the payload key differs per kind (`words` /
+ * `phrases` / `prefixes`), `words` is the shape people guess for all of them,
+ * and a detector dropped without a word is a rule that loads clean and never
+ * fires. {@link validateRule} turns the reason into an error and skips the rule.
+ */
+function validateDetector(v: unknown): { detector: RuleDetector } | { reason: string } {
+  if (!isObj(v)) return { reason: "expected an object" };
+  const kind = v["kind"];
+  switch (kind) {
+    case "words":
+    case "phrases":
     case "opener": {
-      const prefixes = strArray(v["prefixes"]);
-      return prefixes.length ? { kind: "opener", prefixes } : undefined;
+      const key = DETECTOR_PAYLOAD[kind]!;
+      const items = strArray(v[key]);
+      if (!items.length) {
+        const present = Object.keys(v).filter((k) => k !== "kind");
+        const got = present.length ? ` (got ${present.map((k) => `"${k}"`).join(", ")})` : "";
+        return { reason: `kind "${kind}" needs a non-empty "${key}" array of strings${got}` };
+      }
+      return {
+        detector:
+          kind === "words"
+            ? { kind: "words", words: items }
+            : kind === "phrases"
+              ? { kind: "phrases", phrases: items }
+              : { kind: "opener", prefixes: items },
+      };
     }
-    case "regex":
+    case "regex": {
       // Reject empty, over-long, uncompilable, and ReDoS-shaped patterns so a
       // pathological user rule (e.g. "(a+)+$") can never reach matchRegex and
       // hang the host synchronously.
-      return str(v["pattern"]) && isSafeUserRegex(v["pattern"])
-        ? {
-            kind: "regex",
-            pattern: v["pattern"],
-            ...(str(v["flags"]) ? { flags: v["flags"] } : {}),
-          }
-        : undefined;
+      const pattern = v["pattern"];
+      if (!str(pattern)) return { reason: 'kind "regex" needs a non-empty "pattern" string' };
+      if (pattern.length > MAX_USER_PATTERN_LENGTH) {
+        return { reason: `regex pattern exceeds ${MAX_USER_PATTERN_LENGTH} characters` };
+      }
+      if (!isSafeUserRegex(pattern)) {
+        return {
+          reason:
+            "regex pattern is uncompilable or has a nested quantifier — a catastrophic-backtracking shape such as (a+)+",
+        };
+      }
+      return {
+        detector: {
+          kind: "regex",
+          pattern,
+          ...(str(v["flags"]) ? { flags: v["flags"] } : {}),
+        },
+      };
+    }
     default:
-      return undefined;
+      return {
+        reason: `kind must be one of ${Object.keys(DETECTOR_PAYLOAD).join("|")}|regex (got ${
+          typeof kind === "string" ? `"${kind}"` : String(kind)
+        })`,
+      };
   }
 }
 
@@ -118,8 +156,16 @@ function validateRule(v: unknown, i: number, errors: string[]): Rule | null {
     severity: severity as Rule["severity"],
     rationale,
   };
-  const detector = validateDetector(v["detector"]);
-  if (detector) rule.detector = detector;
+  // A `detector` key that fails validation is skipped LOUDLY: silently dropping
+  // it yields a rule that loads clean, reports nothing, and never fires.
+  if (v["detector"] !== undefined) {
+    const result = validateDetector(v["detector"]);
+    if ("reason" in result) {
+      errors.push(`rules[${id}]: invalid "detector" — ${result.reason}`);
+      return null;
+    }
+    rule.detector = result.detector;
+  }
   const examples = validateExamples(v["examples"]);
   if (examples.length) rule.examples = examples;
   return rule;

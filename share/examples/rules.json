@@ -17,6 +17,45 @@
       ]
     },
     {
+      "id": "house.no-cliches",
+      "name": "No borrowed metaphors",
+      "category": "precision",
+      "source": "house style",
+      "method": "hybrid",
+      "severity": "suggestion",
+      "rationale": "A dead metaphor signals borrowed thinking. Replace it with the literal claim it stood in for, which is almost always more specific.",
+      "detector": {
+        "kind": "phrases",
+        "phrases": ["paradigm shift", "low-hanging fruit", "move the needle"]
+      },
+      "examples": [
+        { "before": "a paradigm shift in robustness", "after": "a different robustness metric" }
+      ]
+    },
+    {
+      "id": "house.no-throat-clearing",
+      "name": "Don't open with filler",
+      "category": "clarity",
+      "source": "house style",
+      "method": "hybrid",
+      "severity": "warning",
+      "rationale": "An opening filler phrase spends the reader's attention before the sentence says anything. Delete it and check whether the sentence still works.",
+      "detector": {
+        "kind": "opener",
+        "prefixes": [
+          "It is important to note that",
+          "It should be mentioned that",
+          "As we all know"
+        ]
+      },
+      "examples": [
+        {
+          "before": "It is important to note that the estimator is unbiased.",
+          "after": "The estimator is unbiased."
+        }
+      ]
+    },
+    {
       "id": "house.empty-intensifiers",
       "name": "Cut empty intensifiers",
       "category": "precision",
