@@ -121,6 +121,20 @@ Exit codes: `0` = all files within thresholds; `1` = a violation or an unreadabl
 file; `2` = a usage error (e.g. a non-numeric threshold). A malformed numeric flag
 fails loudly rather than silently disabling the gate.
 
+> **Wiring the CLI into a hook: point at one binary, deliberately.** A repo that
+> has both a working build and a packaged release contains two CLIs —
+> `apps/cli/dist/cli.js` (what `npm run build` just produced) and
+> `share/dist/limpid-share-<version>/cli/limpid.js` (a frozen bundle). Globbing
+> both and sorting picks the release, because `share` sorts after `apps`.
+>
+> That failure is silent and total. The symptoms, as observed: house rules from
+> `.limpid/rules.json` absent, `findings` absent from `--json`, and an unknown
+> `--register` accepted and quietly downgraded to `paper` — all at exit 0, with a
+> plausible grade printed. Nothing in the output says the binary is old.
+>
+> Prefer `apps/cli/dist/cli.js` explicitly when one exists, fall back to the newest
+> packaged release, and never let a sort decide.
+
 The CLI is deterministic only — it never calls an LLM and needs no API key, so it is
 safe in CI. (The LLM judgment lenses are extension-only.)
 
@@ -228,6 +242,18 @@ headless, write a file containing the thing you want caught and check the id app
 ```bash
 node cli/limpid.js --json probe.md | grep '"ruleId": "house.'
 ```
+
+A mistyped payload key is now reported and the rule dropped, so that case is loud.
+A _well-formed_ detector that simply never matches — a typo inside the phrase, a
+regex that compiles but is wrong — still loads clean and fires zero times. Nothing
+but a tripwire file catches that, so probe each rule against text built to trip it
+rather than assuming a rule that loaded is a rule that works.
+
+**Choosing between `phrases` and `regex`.** `phrases` is a raw substring match, so
+it crosses word boundaries: `"In conclusion"` fires inside
+`"its pilot-domain conclusion is confirmed"`. Use `phrases` for fixed strings you
+want found anywhere, and `regex` with `\b` anchors for anything that reads like
+English.
 
 ## Behavioural notes to relay accurately
 
