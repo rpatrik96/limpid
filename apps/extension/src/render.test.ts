@@ -76,6 +76,17 @@ describe("renderReport", () => {
     expect(html).toContain('aria-valuemax="10"');
   });
 
+  it("keeps rule citations out of the panel entirely", async () => {
+    const report = await buildReport();
+    const html = renderReport(report);
+    // The real pipeline attaches a `source` to its findings…
+    const sourced = report.findings.filter((f) => f.source);
+    expect(sourced.length).toBeGreaterThan(0);
+    // …and none of them is rendered: the canon lives in README.md / NOTICE.md.
+    for (const f of sourced) expect(html).not.toContain(escapeHtml(f.source!));
+    expect(html).not.toContain("card-src");
+  });
+
   it("renders a highlight legend mapping severities to meanings near the prose", async () => {
     const report = await buildReport();
     const html = renderReport(report);
@@ -240,17 +251,17 @@ describe("interactive controls", () => {
     expect(html).toContain(">reveal</button>");
   });
 
-  it("declutters the card: Why/Fix as a definition list, source demoted to a muted citation", () => {
+  it("declutters the card: Why/Fix as a definition list, no citation line", () => {
     const report = reportWithFinding();
     report.findings[0]!.source = "Strunk & White — omit needless words.";
     const html = renderReport(report);
     // Why/Fix recede into a tight definition list rather than stacked paragraphs.
     expect(html).toContain('<dl class="card-wf">');
     expect(html).toContain("<dt>Why</dt>");
-    // The per-finding source is preserved verbatim but demoted to a small line.
-    expect(html).toContain('<small class="card-src">');
-    expect(html).toContain("omit needless words");
-    expect(html).not.toContain('<p class="card-src">');
+    // The finding keeps its source in the data — the card just never shows it.
+    expect(report.findings[0]!.source).toBe("Strunk & White — omit needless words.");
+    expect(html).not.toContain("card-src");
+    expect(html).not.toContain("omit needless words");
   });
 
   it("emits a nonce'd controller that posts setAudience and reveal messages", () => {

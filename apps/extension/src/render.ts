@@ -8,7 +8,7 @@
  * The panel shows, per DESIGN.md:
  *   1. an audience control (re-run at a chosen altitude) + the four headline sections,
  *   2. the EXTRACTED prose with span highlights (long/passive/hedge/adverb/…),
- *   3. coach cards — pattern name → why → before/after → source, each with a
+ *   3. coach cards — pattern name → why → before/after, each with a
  *      "reveal" button that asks the host to select the span in the editor,
  *   4. grade + dimension bars + delta-vs-last-run + altitude banner.
  *
@@ -154,8 +154,10 @@ function renderCard(f: Finding, index: number): string {
         `<span class="after">${escapeHtml(f.after)}</span></div>`,
     );
   }
-  // Source: kept verbatim, demoted to a muted citation line behind a § glyph.
-  if (f.source) parts.push(`<small class="card-src">${escapeHtml(f.source)}</small>`);
+  // `f.source` (the authority the rule comes from) is deliberately NOT rendered:
+  // a citation on every card crowds the sidebar without helping the writer fix the
+  // sentence, and the "why" already carries the teaching. The field stays in the
+  // data; the canon is listed in README.md ("Sources") and NOTICE.md.
   parts.push("</div>");
   return parts.join("");
 }
@@ -491,8 +493,6 @@ mark.sev-error { border-color: var(--sev-error); }
 .before { background: rgba(224,87,74,0.1); }
 .after { background: rgba(91,191,106,0.12); }
 .ba-arrow { align-self: center; opacity: 0.5; flex: none; }
-.card-src { display: block; font-size: 0.72rem; opacity: 0.5; margin-top: var(--sp-1); }
-.card-src::before { content: "§ "; opacity: 0.7; }
 .empty { opacity: 0.7; }
 .actions { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-3); }
 .action-btn {
