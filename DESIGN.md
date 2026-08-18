@@ -4,7 +4,7 @@
 > the brand lives in the repo name + the extension manifest. Backup name considered: Plumbline.)
 
 A **local-first VS Code extension** that scores academic writing against _good_ writing — Orwell,
-Strunk & White, Hemingway, the Economist, Smart Brevity, Pinker — and **teaches _why_ a passage
+Strunk & White, Hemingway, the Economist, Pinker — and **teaches _why_ a passage
 fails**, not just where. It is modeled on the coaching UX of Microsoft's _AI-Engineering-Coach_ (a
 VS Code dashboard: scored feedback, trends, editable rules, a learning surface), turned on prose.
 The benchmark is good writing, **not** typical-academic writing, which the tool treats as the failure
@@ -77,7 +77,7 @@ Dimensions and weights mirror the deployed MVP: **Accessibility 20%, Clarity 30%
 Precision 30%** (Precision is the LLM dimension). Section thresholds: abstract FK 10–14 / passive
 < 15%; methods FK ≤ 18 / passive ≤ 35%. Rule sources: Orwell's six, Strunk & White (omit needless
 words, active voice, expletive openers), the Economist (read-twice penalty, acronym penalty, redundant
-temporals), Smart Brevity, the Writer's Diet (bloat categories), Gopen & Swan (stress/topic position,
+temporals), the Writer's Diet (bloat categories), Gopen & Swan (stress/topic position,
 old→new — the LLM lenses), Pinker (curse-of-knowledge). Two vault gaps the exploration found —
 no `[[Strunk&White]]` note, no Gopen–Swan note — are authored here as rule sources.
 

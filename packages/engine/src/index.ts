@@ -160,7 +160,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
       suggestion: `Delete "${h.text}" or replace it with a precise word.`,
       spans: [span(h.start, h.end)],
       source:
-        "Orwell, Politics and the English Language (1946); Strunk & White, The Elements of Style",
+        "Orwell, Politics and the English Language (1946); Strunk, The Elements of Style (1918)",
       confidence: 1,
     });
   }
@@ -179,7 +179,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
           ? 'Replace "in order to" with "to".'
           : `Cut "${h.text}" — the sentence stands without it.`,
       spans: [span(h.start, h.end)],
-      source: "Strunk & White, The Elements of Style (Rule 17: Omit needless words)",
+      source: "Strunk, The Elements of Style (1918), Rule 13 / 4th ed. 17: Omit needless words",
       confidence: 1,
     });
   }
@@ -196,7 +196,7 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
       why: 'Expletive openers ("It is…", "There is…") bury the subject and postpone the verb, weakening the sentence.',
       suggestion: "Lead with the real subject and an active verb.",
       spans: [span(w.sentence.start, w.sentence.end)],
-      source: "Strunk & White, The Elements of Style (Rule 14: Use the active voice)",
+      source: "Strunk, The Elements of Style (1918), Rule 13 / 4th ed. 17: Omit needless words",
       confidence: 0.9,
     });
   }
@@ -230,7 +230,8 @@ export const analyze: AnalyzeFn = (text: string): EngineResult => {
       why: "A pile-up of -ly adverbs often props up weak verbs; a stronger verb usually carries the meaning alone.",
       suggestion: "Replace adverb+verb pairs with one precise verb where possible.",
       spans: adverbHits.map((h: Match) => span(h.start, h.end)),
-      source: "Hemingway; Strunk & White (Rule 16: Use definite, specific, concrete language)",
+      source:
+        "Strunk, The Elements of Style (1918), Rule 12 / 4th ed. 16: Use definite, specific, concrete language",
       confidence: 0.6,
     });
   }

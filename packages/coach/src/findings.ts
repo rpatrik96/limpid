@@ -4,7 +4,7 @@
  * Every LLM finding carries `method: "llm"`, a category drawn from the lens it
  * came from (precision / clarity / flow), the teaching `why`, optional
  * before/after rewrites, and a `source` naming the lens's grounding (Gopen &
- * Swan, Smart Brevity, the rubric pattern). Spans are clamped to the analyzed
+ * Swan, the rubric pattern). Spans are clamped to the analyzed
  * text length so the panel never highlights out of bounds.
  */
 import type { DiagnosisPattern, DimensionKey, Finding, Severity } from "@coach/contract";
@@ -46,7 +46,7 @@ const ARGUMENT_FLOW: LensSpec = {
   ruleId: "precision.argument-flow",
   category: "precision",
   defaultSeverity: "warning",
-  source: "Smart Brevity (lead with the point); writing-verify.md claim–evidence",
+  source: "Gopen & Swan, stress position (lead with the point); writing-verify.md claim–evidence",
   why: "Readers use the first sentence as the frame for the paragraph; a buried lede or unsupported claim forces a re-read and erodes trust.",
 };
 

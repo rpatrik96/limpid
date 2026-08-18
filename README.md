@@ -5,7 +5,7 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-374-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-395-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
 writing against **good** writing — Orwell, Strunk & White, Hemingway, the
@@ -24,6 +24,8 @@ grammar**. It complements a grammar/spell checker (Grammarly, LanguageTool); it 
 not replace one. If your first need is articles, tense, and typos, reach for those;
 reach for Limpid when the sentences are correct but the writing still doesn't land.
 
+Sources, quotations and their copyright status are recorded in [NOTICE.md](NOTICE.md).
+
 ## Contents
 
 - [Demo](#demo)
@@ -32,6 +34,7 @@ reach for Limpid when the sentences are correct but the writing still doesn't la
 - [What it does](#what-it-does)
 - [Editable rules (playground)](#editable-rules-playground)
 - [Registers](#registers)
+- [Sources](#sources)
 - [CLI gate](#cli-gate)
 - [Develop](#develop)
 - [Project layout](#project-layout)
@@ -105,7 +108,7 @@ Toggle save-refresh with `limpid.reanalyzeOnSave`.
 - **Highlights** the extracted prose, Hemingway-style — long sentences, passive
   voice, hedges, fillers, weak openers.
 - **Coaches** with cards: a named pattern (Buried Lede, Idea Soup, Hedge
-  Stacking…) → _why it fails_ → a before/after fix → the rule it comes from. Each
+  Stacking…) → _why it fails_ → a before/after fix. Each
   card can **reveal** the passage in the editor; where there's a concrete rewrite,
   **apply fix** inserts it (and falls back to your clipboard when the source carries
   markup).
@@ -199,6 +202,45 @@ writing — `paper` (default), `blog`, `grant`, `sop` — re-weighting the four
 dimensions and shifting the readability target so a blog post isn't graded like a
 paper. `auto` picks `blog` for `.md`/`.markdown`, `paper` otherwise.
 
+## Sources
+
+Every rule names the authority behind it, so you can go read the argument instead of
+taking the rule on faith. The canon Limpid encodes:
+
+- **George Orwell, "Politics and the English Language" (1946).** The six rules, one
+  Limpid rule each: the dying metaphor, the long word where a short one will do, the
+  word that can be cut, the passive where the active will serve, jargon with an everyday
+  equivalent, and breaking any of them sooner than saying anything barbarous.
+- **William Strunk Jr., _The Elements of Style_ (1918).** Rule 13, omit needless words —
+  which also grounds the expletive-opener and "the fact that" checks — and Rule 10, use
+  the active voice. Rule numbers are given as _1918 / 4th ed._ pairs (`13 / 17`,
+  `10 / 14`), the second being the numbering readers of the modern edition know.
+- **_The Economist Style Guide_.** The "must it be read twice?" test that decides whether
+  a long sentence is actually a problem, plus undefined acronyms, redundant temporals,
+  and "so-called".
+- **Helen Sword, _The Writer's Diet_ (2016).** The four categories of verbal bloat:
+  be-verbs, nominalizations, prepositional pile-up, and adjective/adverb bloat.
+- **Ken Hyland, _Metadiscourse_ (2005).** The hedge/booster distinction, which grounds
+  the boosters rule.
+- **George D. Gopen and Judith A. Swan, "The Science of Scientific Writing," _American
+  Scientist_ 78(6):550–558 (1990).** Subject–verb proximity, the stress position, and
+  old-before-new cohesion — and three of the four LLM lenses.
+- **John M. Swales and Christine B. Feak, _Academic Writing for Graduate Students_.**
+  Integral versus non-integral citation, behind the citation-as-subject and
+  weak-reference-opener rules.
+- **[rpatrik96/research-agora](https://github.com/rpatrik96/research-agora)** (MIT, ©
+  Patrik Reizinger). This project's own upstream: the twelve named failure patterns and
+  the hedge and hype word lists, ported from `writing_verify.py`, `writing-diagnosis.md`,
+  and `editorial-brain.md`.
+
+A few rules cite **Limpid house style** instead — the citation pile-up threshold, for
+one. Those are this project's calls, not anyone else's, and they say so.
+
+[NOTICE.md](NOTICE.md) carries the detail: which passages are quoted and under what
+right, which sources are named but never reproduced, and the copyright status of each.
+The Strunk quotations come from the 1918 first edition, which is in the public domain;
+E. B. White's revision is not quoted here.
+
 ## CLI gate
 
 The `limpid` CLI runs the deterministic path headless — useful as a pre-commit or
@@ -210,7 +252,21 @@ node apps/cli/dist/cli.js path/to/draft.tex --register paper
 ```
 
 It shares the same engine, rubric, and registers as the extension, so the score
-matches what you see in the editor.
+matches what you see in the editor. It also honours your house rules: the gate walks
+up from each file to the nearest `.limpid/rules.json`, so one command over two
+workspaces applies each workspace's own rules.
+
+| Flag                                          | Effect                                           |
+| --------------------------------------------- | ------------------------------------------------ |
+| `--register paper\|blog\|grant\|sop`          | Grade for the kind of writing (default `paper`). |
+| `--rules <path>`                              | Use this rules file instead of discovering one.  |
+| `--no-user-rules`                             | Score against the shipped rubric alone.          |
+| `--json`                                      | Machine-readable output.                         |
+| `--max-passive` / `--max-fk` / `--max-filler` | Fail above these thresholds.                     |
+| `--min-grade`                                 | Fail below this grade.                           |
+
+A malformed or invalid rules file is reported on stderr and skipped — the gate still
+runs, matching the extension's fail-soft behaviour.
 
 ## Develop
 
@@ -221,7 +277,7 @@ original spec in [DESIGN.md](DESIGN.md) and repo conventions in
 
 ```bash
 npm install
-npm test            # 374 vitest tests across core + extension
+npm test            # 395 vitest tests across core + extension
 npm run typecheck
 npm run build       # build every workspace
 npm run eval        # golden-set harness for the LLM lenses

@@ -152,7 +152,8 @@ export const rules: Rule[] = [
     id: "strunk.omit-needless-words",
     name: "Omit needless words",
     category: "clarity",
-    source: "Strunk & White, The Elements of Style, Rule 17 (see sources/strunk-white.md)",
+    source:
+      "Strunk, The Elements of Style (1918), Rule 13 (= Strunk & White Rule 17; see sources/strunk-white.md)",
     method: "hybrid",
     severity: "warning",
     rationale:
@@ -169,7 +170,8 @@ export const rules: Rule[] = [
     id: "strunk.active-voice",
     name: "Use the active voice",
     category: "clarity",
-    source: "Strunk & White, The Elements of Style, Rule 14 (see sources/strunk-white.md)",
+    source:
+      "Strunk, The Elements of Style (1918), Rule 10 (= Strunk & White Rule 14; see sources/strunk-white.md)",
     method: "heuristic",
     severity: "suggestion",
     rationale:
@@ -191,7 +193,7 @@ export const rules: Rule[] = [
     name: "Avoid expletive openers (there is / there are / it is)",
     category: "clarity",
     source:
-      "Strunk & White, The Elements of Style, Rule 14 corollary (see sources/strunk-white.md)",
+      "Strunk, The Elements of Style (1918), Rule 13 (= Strunk & White Rule 17; see sources/strunk-white.md)",
     method: "heuristic",
     severity: "warning",
     rationale:
@@ -208,11 +210,12 @@ export const rules: Rule[] = [
     id: "strunk.the-fact-that",
     name: "Strike out 'the fact that'",
     category: "clarity",
-    source: "Strunk & White, The Elements of Style, Rule 13 (see sources/strunk-white.md)",
+    source:
+      "Strunk, The Elements of Style (1918), Rule 13 (= Strunk & White Rule 17; see sources/strunk-white.md)",
     method: "hybrid",
     severity: "warning",
     rationale:
-      '"the fact that" is a debilitating expression: it should be revised out of every sentence in which it occurs. It nominalizes a verb and delays the point.',
+      'Strunk: "the fact that" should be revised out of every sentence in which it occurs. It nominalizes a verb and delays the point.',
     detector: {
       kind: "regex",
       pattern: "\\bthe\\s+fact\\s+that\\b",
