@@ -91,7 +91,7 @@ node cli/limpid.js --json sections/*.md                      # machine-readable
 | `--max-fk <n>`       | fail if Flesch–Kincaid grade exceeds `n`                                 |
 | `--max-filler <n>`   | fail if filler density (per 100 words) exceeds `n`                       |
 | `--min-grade <G>`    | fail if the grade is below `G` (e.g. `C`)                                |
-| `--register <r>`     | `paper` (default) \| `blog` \| `grant` \| `sop`                          |
+| `--register <r>`     | `paper` (default) \| `blog` \| `grant` \| `sop` \| `notes`               |
 | `--json`             | emit JSON instead of one line per file                                   |
 | `--rules <path>`     | use this house-rules file instead of discovering one                     |
 | `--no-user-rules`    | score against the shipped rubric alone                                   |
