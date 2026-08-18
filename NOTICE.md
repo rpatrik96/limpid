@@ -29,6 +29,7 @@ rest of the EU.
 
 > [!IMPORTANT]
 > **Cite Strunk 1918, not Strunk & White.**
+>
 > Both quoted Strunk passages come from the 1918 first edition, which is in the public
 > domain. E. B. White's 1959 revision (Macmillan; 4th ed. Longman, 2000) is still in
 > copyright and is **not** quoted here. Where this repository gives two rule numbers —
