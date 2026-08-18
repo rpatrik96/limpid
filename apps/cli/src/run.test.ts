@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { extract as extractMd } from "@coach/markdown";
 import { extract as extractTex } from "@coach/latex";
 
-import { checkText, formatResults, parseArgs, rubricFor } from "./run.js";
+import { checkText, formatResults, parseArgs, rubricFor, sourceLineFor } from "./run.js";
 
 /** A minimal, valid house rule: one deterministic word detector. */
 const houseRules = {
@@ -115,6 +115,93 @@ describe("house rules (.limpid/rules.json) reach the gate", () => {
     const without = await checkText(text, "x.md", {}, "paper");
     const with_ = await checkText(text, "x.md", {}, "paper", houseRules);
     expect(with_.findingCount).toBeGreaterThan(without.findingCount);
+  });
+});
+
+describe("per-finding output", () => {
+  it("omits findings unless asked, and includes them when asked", async () => {
+    const text = "# T\n\nWe utilize a buffer. We utilize a queue.\n";
+    const quiet = await checkText(text, "x.md", {}, "paper", houseRules);
+    const loud = await checkText(text, "x.md", {}, "paper", houseRules, true);
+    expect(quiet.findings).toBeUndefined();
+    expect(loud.findings).toBeDefined();
+    expect(loud.findings?.length).toBe(loud.findingCount);
+  });
+
+  it("carries a rule id, a source line and an excerpt a caller can act on", async () => {
+    const text = "# T\n\nA clean opening line.\n\nWe utilize a buffer here.\n";
+    const r = await checkText(text, "x.md", {}, "paper", houseRules, true);
+    const hit = r.findings?.find((f) => f.ruleId === "house.no-utilize");
+    expect(hit).toBeDefined();
+    expect(hit?.severity).toBe("suggestion");
+    expect(typeof hit?.message).toBe("string");
+    // The source line is 1-based and points into the ORIGINAL file, not the
+    // extracted prose — that is the whole point of consulting the source map.
+    expect(hit?.line === null || hit.line >= 1).toBe(true);
+    expect(hit?.excerpt.length).toBeLessThanOrEqual(101);
+  });
+
+  it("orders findings most severe first so a caller can truncate safely", async () => {
+    const text = "# T\n\nWe utilize a buffer. It is worth noting that we utilize a queue.\n";
+    const r = await checkText(text, "x.md", {}, "paper", houseRules, true);
+    const ranks = (r.findings ?? []).map((f) =>
+      ["info", "suggestion", "warning", "error"].indexOf(f.severity),
+    );
+    expect([...ranks].sort((a, b) => b - a)).toEqual(ranks);
+  });
+
+  it("maps an offset onto the last source-map entry at or before it", () => {
+    const map = [
+      { textOffset: 0, sourceLine: 1 },
+      { textOffset: 10, sourceLine: 5 },
+      { textOffset: 40, sourceLine: 12 },
+    ];
+    expect(sourceLineFor(map, 0)).toBe(1);
+    expect(sourceLineFor(map, 9)).toBe(1);
+    expect(sourceLineFor(map, 10)).toBe(5);
+    expect(sourceLineFor(map, 39)).toBe(5);
+    expect(sourceLineFor(map, 1000)).toBe(12);
+    expect(sourceLineFor([], 5)).toBeNull();
+  });
+});
+
+describe("--max-severity gate", () => {
+  it("parses a valid severity and rejects a bogus one", () => {
+    expect(parseArgs(["--max-severity", "warning", "x.md"]).thresholds.maxSeverity).toBe("warning");
+    const onError = (m: string): never => {
+      throw new Error(m);
+    };
+    expect(() => parseArgs(["--max-severity", "loud", "x.md"], onError)).toThrow(/--max-severity/);
+  });
+
+  it("fails on a house rule at the bar and passes below it", async () => {
+    const text = "# T\n\nWe utilize a buffer. We utilize a queue.\n";
+    const atSuggestion = await checkText(
+      text,
+      "x.md",
+      { maxSeverity: "suggestion" },
+      "paper",
+      houseRules,
+    );
+    const atError = await checkText(text, "x.md", { maxSeverity: "error" }, "paper", houseRules);
+    expect(atSuggestion.failed).toBe(true);
+    expect(atSuggestion.violations.join(" ")).toMatch(/suggestion\+/);
+    expect(atError.failed).toBe(false);
+  });
+});
+
+describe("the notes register", () => {
+  it("is accepted by --register", () => {
+    expect(parseArgs(["--register", "notes", "x.md"]).register).toBe("notes");
+  });
+
+  it("weights flow above paper's, because a wall of text is the failure mode", () => {
+    const paper = rubricFor("paper").rubric;
+    const notes = rubricFor("notes").rubric;
+    const flow = (r: typeof paper): number =>
+      r.dimensions.find((d) => d.key === "flow")?.weight ?? 0;
+    expect(flow(notes)).toBeGreaterThan(flow(paper));
+    expect(notes.dimensions.reduce((s, d) => s + d.weight, 0)).toBeCloseTo(1, 5);
   });
 });
 

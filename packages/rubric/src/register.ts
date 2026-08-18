@@ -7,11 +7,12 @@
  * - blog:  prize accessibility; easier FK; first person / short sentences are fine.
  * - grant: clarity + significance; reviewers skim, so accessibility matters.
  * - sop:   statement of purpose — clear first-person narrative over dense rigor.
+ * - notes: internal analytic prose — research notes, audits, decision records.
  */
 import type { DimensionKey, RubricConfig } from "@coach/contract";
 
-export type Register = "paper" | "blog" | "grant" | "sop";
-export const REGISTERS: Register[] = ["paper", "blog", "grant", "sop"];
+export type Register = "paper" | "blog" | "grant" | "sop" | "notes";
+export const REGISTERS: Register[] = ["paper", "blog", "grant", "sop", "notes"];
 
 interface RegisterProfile {
   weights: Record<DimensionKey, number>;
@@ -40,6 +41,16 @@ const PROFILES: Record<Register, RegisterProfile> = {
     weights: { accessibility: 0.3, clarity: 0.3, flow: 0.2, precision: 0.2 },
     fkShift: -2,
     note: "statement of purpose — a clear first-person narrative over dense rigor",
+  },
+  // Written for one reader who already has the context, and re-read cold months
+  // later. Accessibility to a stranger matters least of any register; flow is
+  // weighted up because the failure mode is a wall of text rather than an
+  // imprecise claim, and the FK band is pulled below paper's because a note that
+  // has to be read twice has already failed at its one job.
+  notes: {
+    weights: { accessibility: 0.2, clarity: 0.35, flow: 0.25, precision: 0.2 },
+    fkShift: -2,
+    note: "internal analytic note — one informed reader, read cold later; structure carries it",
   },
 };
 

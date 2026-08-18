@@ -85,16 +85,29 @@ node cli/limpid.js --max-passive 0.4 --min-grade C intro.tex # gate (exit 1 if v
 node cli/limpid.js --json sections/*.md                      # machine-readable
 ```
 
-| Flag                | Effect                                                  |
-| ------------------- | ------------------------------------------------------- |
-| `--max-passive <f>` | fail if passive-voice fraction exceeds `f` (e.g. `0.4`) |
-| `--max-fk <n>`      | fail if Flesch–Kincaid grade exceeds `n`                |
-| `--max-filler <n>`  | fail if filler density (per 100 words) exceeds `n`      |
-| `--min-grade <G>`   | fail if the grade is below `G` (e.g. `C`)               |
-| `--register <r>`    | `paper` (default) \| `blog` \| `grant` \| `sop`         |
-| `--json`            | emit JSON instead of one line per file                  |
-| `--rules <path>`    | use this house-rules file instead of discovering one    |
-| `--no-user-rules`   | score against the shipped rubric alone                  |
+| Flag                 | Effect                                                                   |
+| -------------------- | ------------------------------------------------------------------------ |
+| `--max-passive <f>`  | fail if passive-voice fraction exceeds `f` (e.g. `0.4`)                  |
+| `--max-fk <n>`       | fail if Flesch–Kincaid grade exceeds `n`                                 |
+| `--max-filler <n>`   | fail if filler density (per 100 words) exceeds `n`                       |
+| `--min-grade <G>`    | fail if the grade is below `G` (e.g. `C`)                                |
+| `--register <r>`     | `paper` (default) \| `blog` \| `grant` \| `sop`                          |
+| `--json`             | emit JSON instead of one line per file                                   |
+| `--rules <path>`     | use this house-rules file instead of discovering one                     |
+| `--no-user-rules`    | score against the shipped rubric alone                                   |
+| `--max-severity <s>` | fail if any finding is at least `info`\|`suggestion`\|`warning`\|`error` |
+
+`--register` also accepts `notes`: internal analytic prose — research notes, audits,
+decision records, written for one reader who already has the context and re-read cold
+months later. It weights flow above `paper`'s, because the failure mode there is a wall
+of text rather than an imprecise claim, and it targets a lower reading grade.
+
+**`--json` carries the findings themselves**, not just a count — `ruleId`, `category`,
+`severity`, `message`, the 1-based `line` in the _source_ file (via the extraction's
+source map), and a trimmed `excerpt`. Ordered most severe first, then by line, so a
+caller can truncate without losing the important ones. This is what makes the gate
+actionable: "grade dropped to B+" is not something a hook can fix, whereas
+"house.changelog-voice at line 62" is.
 
 **House rules in the gate.** For each file the CLI walks up from that file's
 directory to the filesystem root and uses the nearest `.limpid/rules.json`, so
@@ -194,10 +207,27 @@ Shape:
 }
 ```
 
-Detector kinds: `words` (whole-word), `phrases` (substring), `opener` (sentence-initial
-prefix), `regex` (`{ "kind": "regex", "pattern": "...", "flags": "gi" }`). User regexes
-are guarded against catastrophic backtracking (no nested quantifiers, ≤ 500 chars) and
-fail soft if rejected.
+Detector kinds — **each carries its own payload key, and the key is not `words` for
+three of the four**. Getting this wrong is the easiest mistake to make here: an
+unrecognised detector is dropped and the rule is kept, so it loads, reports no error,
+and silently never fires.
+
+| Kind      | Shape                                                         | Matches               |
+| --------- | ------------------------------------------------------------- | --------------------- |
+| `words`   | `{ "kind": "words", "words": ["utilize"] }`                   | whole words           |
+| `phrases` | `{ "kind": "phrases", "phrases": ["In recent years"] }`       | substrings            |
+| `opener`  | `{ "kind": "opener", "prefixes": ["Moreover"] }`              | sentence-initial only |
+| `regex`   | `{ "kind": "regex", "pattern": "\\bvery\\b", "flags": "gi" }` | the pattern           |
+
+User regexes are guarded against catastrophic backtracking (no nested quantifiers,
+≤ 500 chars) and fail soft if rejected.
+
+**Verify a new rule fires before trusting it.** In the editor use "Limpid: Test Rule";
+headless, write a file containing the thing you want caught and check the id appears:
+
+```bash
+node cli/limpid.js --json probe.md | grep '"ruleId": "house.'
+```
 
 ## Behavioural notes to relay accurately
 

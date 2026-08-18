@@ -44,8 +44,9 @@ async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.files.length === 0) {
     process.stderr.write(
-      "usage: limpid [--json] [--register paper|blog|grant|sop] [--rules path] [--no-user-rules]\n" +
-        "              [--max-passive f] [--max-fk n] [--max-filler n] [--min-grade G] <file...>\n",
+      "usage: limpid [--json] [--register paper|blog|grant|sop|notes] [--rules path] [--no-user-rules]\n" +
+        "              [--max-passive f] [--max-fk n] [--max-filler n] [--min-grade G]\n" +
+        "              [--max-severity info|suggestion|warning|error] <file...>\n",
     );
     process.exit(2);
   }
@@ -88,7 +89,9 @@ async function main(): Promise<void> {
       );
       continue;
     }
-    results.push(await checkText(text, file, opts.thresholds, opts.register, rulesForFile(file)));
+    results.push(
+      await checkText(text, file, opts.thresholds, opts.register, rulesForFile(file), opts.json),
+    );
   }
 
   process.stdout.write(formatResults(results, opts.json) + "\n");

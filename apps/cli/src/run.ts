@@ -14,6 +14,7 @@ import {
 import { extract as extractTex } from "@coach/latex";
 import { extract as extractMd } from "@coach/markdown";
 import { analyze } from "@coach/engine";
+import type { Extraction, Finding, Severity, SourceMapEntry } from "@coach/contract";
 
 /** Markdown files extract via @coach/markdown (headings drive sectioning); else LaTeX. */
 function extractorFor(file: string): typeof extractTex {
@@ -25,6 +26,8 @@ export interface Thresholds {
   maxFk?: number;
   maxFiller?: number;
   minGrade?: string;
+  /** Fail if any finding is at least this severe: info|suggestion|warning|error. */
+  maxSeverity?: string;
 }
 
 export interface CliOptions {
@@ -38,13 +41,94 @@ export interface CliOptions {
   noUserRules: boolean;
 }
 
+/**
+ * One finding, flattened for machine consumption.
+ *
+ * A gate that reports only "grade dropped to B+" tells a caller nothing it can
+ * act on. `ruleId` plus `line` says which rule fired and where, which is what a
+ * pre-commit hook or an editing agent needs in order to fix it rather than guess.
+ */
+export interface FindingOut {
+  ruleId: string;
+  patternName?: string;
+  category: string;
+  severity: Severity;
+  message: string;
+  /** 1-based line in the SOURCE file, via the extraction's source map. */
+  line: number | null;
+  /** The offending text itself, trimmed. Empty for document-level findings. */
+  excerpt: string;
+}
+
 export interface FileResult {
   file: string;
   grade: string;
   metrics: { passiveFraction: number; fk: number; fillerDensity: number; words: number };
   findingCount: number;
+  /** Present in --json only; ordered most severe first, then by line. */
+  findings?: FindingOut[];
   failed: boolean;
   violations: string[];
+}
+
+/** Ascending, so an index comparison answers "at least this severe". */
+const SEVERITY_ORDER: Severity[] = ["info", "suggestion", "warning", "error"];
+
+function severityRank(s: string): number {
+  return SEVERITY_ORDER.indexOf(s as Severity);
+}
+
+/**
+ * Source line for an offset into the extracted prose.
+ *
+ * `Extraction.sourceMap` is coarse and monotonic — entries mark where a run of
+ * prose began in the original file — so the answer is the last entry at or
+ * before the offset. Binary search because a long document carries thousands of
+ * entries and every finding needs one.
+ */
+export function sourceLineFor(map: SourceMapEntry[], offset: number): number | null {
+  if (map.length === 0) return null;
+  let lo = 0;
+  let hi = map.length - 1;
+  let best: number | null = null;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const entry = map[mid];
+    if (entry && entry.textOffset <= offset) {
+      best = entry.sourceLine;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return best;
+}
+
+const MAX_EXCERPT = 100;
+
+function flattenFindings(findings: Finding[], extraction: Extraction): FindingOut[] {
+  const out = findings.map((f) => {
+    const span = f.spans[0];
+    const excerpt = span
+      ? extraction.text.slice(span.start, span.end).replace(/\s+/g, " ").trim()
+      : "";
+    return {
+      ruleId: f.ruleId,
+      ...(f.patternName ? { patternName: f.patternName } : {}),
+      category: f.category,
+      severity: f.severity,
+      message: f.message,
+      line: span ? sourceLineFor(extraction.sourceMap, span.start) : null,
+      excerpt: excerpt.length > MAX_EXCERPT ? excerpt.slice(0, MAX_EXCERPT) + "…" : excerpt,
+    };
+  });
+  out.sort(
+    (a, b) =>
+      severityRank(b.severity) - severityRank(a.severity) ||
+      (a.line ?? Number.MAX_SAFE_INTEGER) - (b.line ?? Number.MAX_SAFE_INTEGER) ||
+      a.ruleId.localeCompare(b.ruleId),
+  );
+  return out;
 }
 
 /**
@@ -112,6 +196,15 @@ export function parseArgs(argv: string[], onError: OnArgError = defaultOnArgErro
       case "--min-grade":
         thresholds.minGrade = argv[++i];
         break;
+      case "--max-severity": {
+        const v = argv[++i];
+        if (v && SEVERITY_ORDER.includes(v as Severity)) thresholds.maxSeverity = v;
+        else if (v)
+          onError(
+            `--max-severity expects one of ${SEVERITY_ORDER.join("|")}, got ${JSON.stringify(v)}`,
+          );
+        break;
+      }
       default:
         if (a && !a.startsWith("--")) files.push(a);
     }
@@ -169,12 +262,14 @@ export async function checkText(
   t: Thresholds,
   register: Register = "paper",
   userRules?: unknown,
+  withFindings = false,
 ): Promise<FileResult> {
   const extraction = extractorFor(file)(text);
   const engine = analyze(extraction.text);
   const { rubric } = rubricFor(register, userRules);
   const report = await createCoach().review({ extraction, engine, rubric });
   const m = report.metrics;
+  const findings = flattenFindings(report.findings, extraction);
 
   const metrics = {
     passiveFraction: round(m.passiveFraction, 3),
@@ -200,12 +295,25 @@ export async function checkText(
       violations.push(`grade ${report.grade} < ${t.minGrade}`);
     }
   }
+  if (t.maxSeverity !== undefined) {
+    const bar = severityRank(t.maxSeverity);
+    const hits = findings.filter((f) => severityRank(f.severity) >= bar);
+    if (hits.length > 0) {
+      const worst = hits[0];
+      violations.push(
+        `${hits.length} finding(s) at ${t.maxSeverity}+ (first: ${worst?.ruleId}` +
+          (worst?.line ? ` line ${worst.line}` : "") +
+          ")",
+      );
+    }
+  }
 
   return {
     file,
     grade: report.grade,
     metrics,
-    findingCount: report.findings.length,
+    findingCount: findings.length,
+    ...(withFindings ? { findings } : {}),
     failed: violations.length > 0,
     violations,
   };
