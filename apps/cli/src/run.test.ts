@@ -3,7 +3,25 @@ import { describe, expect, it } from "vitest";
 import { extract as extractMd } from "@coach/markdown";
 import { extract as extractTex } from "@coach/latex";
 
-import { checkText, formatResults, parseArgs } from "./run.js";
+import { checkText, formatResults, parseArgs, rubricFor } from "./run.js";
+
+/** A minimal, valid house rule: one deterministic word detector. */
+const houseRules = {
+  rules: [
+    {
+      id: "house.no-utilize",
+      name: "Avoid 'utilize'",
+      category: "clarity",
+      source: "house style",
+      method: "deterministic",
+      severity: "suggestion",
+      rationale: "'use' is shorter and clearer.",
+      detector: { kind: "words", words: ["utilize", "utilizes", "utilizing"] },
+      examples: [{ before: "We utilize a buffer.", after: "We use a buffer." }],
+    },
+  ],
+  patterns: [],
+};
 
 describe("parseArgs", () => {
   it("parses files, --json, and thresholds", () => {
@@ -44,6 +62,59 @@ describe("parseArgs", () => {
     // NaN-producing tokens are rejected; a valid number is not.
     expect(() => parseArgs(["--max-passive", "NaN", "x.tex"], onError)).toThrow();
     expect(() => parseArgs(["--max-passive", "0.3", "x.tex"], onError)).not.toThrow();
+  });
+});
+
+describe("house rules (.limpid/rules.json) reach the gate", () => {
+  it("parses --rules and --no-user-rules", () => {
+    const o = parseArgs(["--rules", "/tmp/r.json", "x.md"]);
+    expect(o.rulesPath).toBe("/tmp/r.json");
+    expect(o.noUserRules).toBe(false);
+    expect(parseArgs(["--no-user-rules", "x.md"]).noUserRules).toBe(true);
+    expect(parseArgs(["x.md"]).rulesPath).toBeUndefined();
+  });
+
+  it("merges a user rule into the register rubric", () => {
+    const base = rubricFor("paper");
+    const merged = rubricFor("paper", houseRules);
+    expect(merged.ruleCount).toBe(1);
+    expect(merged.errors).toEqual([]);
+    expect(merged.rubric.rules.length).toBe(base.rubric.rules.length + 1);
+    expect(merged.rubric.rules.some((r) => r.id === "house.no-utilize")).toBe(true);
+  });
+
+  it("overrides a built-in rule when the id matches, rather than appending", () => {
+    const base = rubricFor("paper");
+    const targetId = base.rubric.rules[0]?.id;
+    expect(targetId).toBeTruthy();
+    const override = {
+      rules: [{ ...houseRules.rules[0], id: targetId, name: "Overridden" }],
+      patterns: [],
+    };
+    const merged = rubricFor("paper", override);
+    expect(merged.rubric.rules.length).toBe(base.rubric.rules.length);
+    expect(merged.rubric.rules.find((r) => r.id === targetId)?.name).toBe("Overridden");
+  });
+
+  it("survives a malformed rules file: reports, drops, never throws", () => {
+    const bad = { rules: [{ id: "broken" }, "not-an-object", 42], patterns: [] };
+    const merged = rubricFor("paper", bad);
+    expect(merged.errors.length).toBeGreaterThan(0);
+    expect(merged.ruleCount).toBe(0);
+    expect(merged.rubric.rules.length).toBe(rubricFor("paper").rubric.rules.length);
+  });
+
+  it("is a no-op when no rules are supplied, so the shipped rubric is unchanged", () => {
+    const none = rubricFor("paper", undefined);
+    expect(none.ruleCount).toBe(0);
+    expect(none.rubric.rules.length).toBe(rubricFor("paper").rubric.rules.length);
+  });
+
+  it("a firing house rule changes the score, which is the whole point", async () => {
+    const text = "We utilize a buffer. We utilize a queue. We utilize a cache.\n";
+    const without = await checkText(text, "x.md", {}, "paper");
+    const with_ = await checkText(text, "x.md", {}, "paper", houseRules);
+    expect(with_.findingCount).toBeGreaterThan(without.findingCount);
   });
 });
 

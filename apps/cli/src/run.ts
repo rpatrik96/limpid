@@ -3,7 +3,14 @@
  * deterministic pipeline (coach review with NO model) and gates on thresholds.
  */
 import { createCoach } from "@coach/coach";
-import { defaultRubric, rubricForRegister, REGISTERS, type Register } from "@coach/rubric";
+import {
+  defaultRubric,
+  mergeRubric,
+  parseUserRules,
+  rubricForRegister,
+  REGISTERS,
+  type Register,
+} from "@coach/rubric";
 import { extract as extractTex } from "@coach/latex";
 import { extract as extractMd } from "@coach/markdown";
 import { analyze } from "@coach/engine";
@@ -25,6 +32,10 @@ export interface CliOptions {
   json: boolean;
   thresholds: Thresholds;
   register: Register;
+  /** Explicit `--rules <path>`; otherwise the caller discovers `.limpid/rules.json`. */
+  rulesPath?: string;
+  /** `--no-user-rules`: score against the shipped rubric alone. */
+  noUserRules: boolean;
 }
 
 export interface FileResult {
@@ -67,12 +78,22 @@ export function parseArgs(argv: string[], onError: OnArgError = defaultOnArgErro
   const thresholds: Thresholds = {};
   let json = false;
   let register: Register = "paper";
+  let rulesPath: string | undefined;
+  let noUserRules = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     switch (a) {
       case "--json":
         json = true;
+        break;
+      case "--rules": {
+        const v = argv[++i];
+        if (v) rulesPath = v;
+        break;
+      }
+      case "--no-user-rules":
+        noUserRules = true;
         break;
       case "--register": {
         const v = argv[++i];
@@ -95,7 +116,7 @@ export function parseArgs(argv: string[], onError: OnArgError = defaultOnArgErro
         if (a && !a.startsWith("--")) files.push(a);
     }
   }
-  return { files, json, thresholds, register };
+  return { files, json, thresholds, register, rulesPath, noUserRules };
 }
 
 /** Grade order, ascending, derived from the rubric's bands (by min threshold). */
@@ -112,15 +133,46 @@ const round = (x: number, d: number): number => {
   return Math.round(x * p) / p;
 };
 
+/**
+ * House rules for the gate.
+ *
+ * `.limpid/rules.json` used to reach the extension's coach and grade but not this
+ * CLI, so a team could write a house rule, watch it fire in the editor, and have
+ * CI pass anyway. The rubric merge happens here, on already-parsed JSON: this
+ * module stays free of fs/process by contract, so discovery and reading belong to
+ * the caller. Invalid entries are dropped by `parseUserRules` and reported rather
+ * than thrown — a malformed house rule must not take the gate down.
+ */
+export function rubricFor(
+  register: Register,
+  userRules?: unknown,
+): {
+  rubric: ReturnType<typeof rubricForRegister>;
+  ruleCount: number;
+  errors: string[];
+} {
+  const base = rubricForRegister(register, defaultRubric);
+  if (userRules === undefined || userRules === null) {
+    return { rubric: base, ruleCount: 0, errors: [] };
+  }
+  const parsed = parseUserRules(userRules);
+  return {
+    rubric: mergeRubric(base, { rules: parsed.rules, patterns: parsed.patterns }),
+    ruleCount: parsed.rules.length,
+    errors: parsed.errors,
+  };
+}
+
 export async function checkText(
   text: string,
   file: string,
   t: Thresholds,
   register: Register = "paper",
+  userRules?: unknown,
 ): Promise<FileResult> {
   const extraction = extractorFor(file)(text);
   const engine = analyze(extraction.text);
-  const rubric = rubricForRegister(register, defaultRubric);
+  const { rubric } = rubricFor(register, userRules);
   const report = await createCoach().review({ extraction, engine, rubric });
   const m = report.metrics;
 

@@ -93,6 +93,16 @@ node cli/limpid.js --json sections/*.md                      # machine-readable
 | `--min-grade <G>`   | fail if the grade is below `G` (e.g. `C`)               |
 | `--register <r>`    | `paper` (default) \| `blog` \| `grant` \| `sop`         |
 | `--json`            | emit JSON instead of one line per file                  |
+| `--rules <path>`    | use this house-rules file instead of discovering one    |
+| `--no-user-rules`   | score against the shipped rubric alone                  |
+
+**House rules in the gate.** For each file the CLI walks up from that file's
+directory to the filesystem root and uses the nearest `.limpid/rules.json`, so
+gating files from two workspaces in one command applies each workspace's own
+rules. The file is read and validated once per path. A malformed file, or an
+individual rule that fails validation, is reported on stderr and skipped — a bad
+house rule never takes the gate down. In non-JSON mode the CLI prints how many
+house rules it loaded and from where.
 
 Exit codes: `0` = all files within thresholds; `1` = a violation or an unreadable
 file; `2` = a usage error (e.g. a non-numeric threshold). A malformed numeric flag
