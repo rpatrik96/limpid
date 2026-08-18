@@ -160,6 +160,35 @@ describe("unit — transformInline", () => {
   });
 });
 
+describe("unit — callout heads", () => {
+  it("drops the [!type] marker, which is markup rather than a word", () => {
+    expect(transformInline("> [!warning] Grounding is the weak stage")).toBe(
+      "Grounding is the weak stage.",
+    );
+  });
+
+  it("closes the title so it cannot fuse with the callout body", () => {
+    // The title is a heading and carries no period in the source; without one added
+    // here the splitter glued it to the body's first sentence and every
+    // callout-heavy note read a grade harder than it is.
+    expect(transformInline("> [!info] What this is")).toBe("What this is.");
+  });
+
+  it("leaves a title that already ends in punctuation alone", () => {
+    expect(transformInline("> [!tip] Read this first.")).toBe("Read this first.");
+    expect(transformInline("> [!question] Which route wins?")).toBe("Which route wins?");
+  });
+
+  it("handles foldable callouts and a bare head with no title", () => {
+    expect(transformInline("> [!note]- Quantitative hypothesis")).toBe("Quantitative hypothesis.");
+    expect(transformInline("> [!abstract]")).toBe("");
+  });
+
+  it("leaves an ordinary blockquote untouched", () => {
+    expect(transformInline("> not a callout, just a quote")).toBe("not a callout, just a quote");
+  });
+});
+
 describe("extract — review regressions", () => {
   it("keeps prose around an HTML comment (single- and multi-line)", () => {
     expect(extract("Keep this. <!-- note --> And this too.").text).toBe("Keep this. And this too.");

@@ -197,12 +197,22 @@ function dropTables(raw: string[], drop: boolean[], headings: Heading[], from: n
 
 const ESCAPED_SPECIAL = /\\([\\`*_{}[\]()#+\-.!>~|])/g;
 
+/** Obsidian / GitHub callout head: one or more `>` then `[!type]`, optionally foldable. */
+const CALLOUT_HEAD = /^\s{0,3}(?:>\s?)+\[!\w+\][-+]?/;
+
 /** Strip inline Markdown from a single (already-classified) line → plain prose. */
 export function transformInline(line: string): string {
   let t = line;
 
+  // A callout head — `> [!warning] Grounding is the weak stage` — is a HEADING, but
+  // nothing here used to end it, so the splitter glued the title to the first
+  // sentence of the body and every callout-heavy note read one grade harder than it
+  // is. The `[!type]` token is markup and was also being counted as a word.
+  const calloutHead = CALLOUT_HEAD.test(line);
+
   // Leading block markers: blockquote(s), then list marker / task box, then ATX #s.
   t = t.replace(/^\s{0,3}(?:>\s?)+/, "");
+  if (calloutHead) t = t.replace(/^\[!\w+\][-+]?[ \t]*/, "");
   t = t.replace(/^\s{0,3}([-*+]|\d+[.)])[ \t]+(?:\[[ xX]\][ \t]+)?/, "");
   t = t.replace(/^\s{0,3}#{1,6}(?:[ \t]+|$)/, "").replace(/[ \t]+#+[ \t]*$/, "");
 
@@ -245,7 +255,13 @@ export function transformInline(line: string): string {
   // Unescape backslash-escaped specials, then normalise whitespace.
   t = t.replace(ESCAPED_SPECIAL, "$1");
   t = t.replace(/[ \t]+/g, " ");
-  return t.trim();
+  t = t.trim();
+
+  // Close the callout title so it is its own sentence. A title carries no terminal
+  // punctuation of its own and must not gain one in the source: it belongs here, in
+  // the extraction, not in the author's Markdown.
+  if (calloutHead && t !== "" && !/[.!?:;]$/.test(t)) t += ".";
+  return t;
 }
 
 /** Emit one {@link SourceLine} per physical line; dropped lines become blanks. */
