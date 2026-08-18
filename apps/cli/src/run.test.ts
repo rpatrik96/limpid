@@ -137,7 +137,8 @@ describe("per-finding output", () => {
     expect(typeof hit?.message).toBe("string");
     // The source line is 1-based and points into the ORIGINAL file, not the
     // extracted prose — that is the whole point of consulting the source map.
-    expect(hit?.line === null || hit.line >= 1).toBe(true);
+    const line = hit?.line ?? null;
+    expect(line === null || line >= 1).toBe(true);
     expect(hit?.excerpt.length).toBeLessThanOrEqual(101);
   });
 
