@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`node scripts/render-webview.mjs` works from the repo root**, as its own docstring
+  says it should. `esbuild` was only ever a workspace devDependency, so the bare import
+  in the script failed to resolve; it is now a root devDependency. The demo screenshot is
+  regenerated against the current card renderer and rendered at 2x, so it stays crisp on
+  a high-DPI screen.
+
 ## [0.0.15]
 
 The release that makes the repository public.

@@ -200,7 +200,11 @@ async function screenshot(htmlPath) {
   let browser;
   try {
     browser = await playwright.chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 460, height: 900 } });
+    // Sidebar width, rendered at 2x so the asset stays crisp on a high-DPI screen.
+    const page = await browser.newPage({
+      viewport: { width: 460, height: 900 },
+      deviceScaleFactor: 2,
+    });
     await page.goto(pathToFileURL(htmlPath).href, { waitUntil: "load" });
     await page.screenshot({ path: pngOut, fullPage: true });
     console.log(`[render-webview] wrote ${pngOut}`);
