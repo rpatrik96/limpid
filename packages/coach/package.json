@@ -20,6 +20,6 @@
     "@coach/latex": "*",
     "@coach/providers": "*",
     "@types/node": "^25.9.1",
-    "typescript": "^5.6.3"
+    "typescript": "^6.0.3"
   }
 }
