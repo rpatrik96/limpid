@@ -1,6 +1,7 @@
 {
   "name": "@coach/cli",
   "version": "0.0.1",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "limpid CLI — deterministic writing checks for CI / pre-commit gates on .tex / .md (and prose).",

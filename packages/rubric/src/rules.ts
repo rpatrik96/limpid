@@ -147,7 +147,7 @@ export const rules: Rule[] = [
     ],
   },
 
-  // ── Strunk & White — The Elements of Style ────────────────────────────────
+  // ── Strunk — The Elements of Style (1918) ─────────────────────────────────
   {
     id: "strunk.omit-needless-words",
     name: "Omit needless words",

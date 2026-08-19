@@ -93,7 +93,7 @@ const report = {
         "We give a simple identifiability criterion that predicts when a representation recovers the latent factors — sharpening a question prior work left open.",
       spans: [span(extractedText, "A great deal of prior work has explored the topic")],
       source:
-        "Strunk & White, The Elements of Style — put the emphatic words at the end; lead with the point.",
+        "Strunk, The Elements of Style (1918) — put the emphatic words at the end; lead with the point.",
       confidence: 0.78,
     },
     {
@@ -132,7 +132,7 @@ const report = {
       why: "It states nothing a reader did not assume. Cut the throat-clearing and name the methods that matter.",
       suggestion: "Replace with the specific prior approaches you build on.",
       spans: [span(extractedText, "a variety of methods have been proposed over the years")],
-      source: "Strunk & White — omit needless words.",
+      source: "Strunk, The Elements of Style (1918) — omit needless words.",
       confidence: 0.66,
     },
   ],

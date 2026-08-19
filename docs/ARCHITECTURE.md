@@ -1,7 +1,7 @@
 # Architecture
 
 Limpid is an educational VS Code writing coach for academic prose. It scores a passage against _good_
-writing — Orwell, Strunk & White, Hemingway, the Economist, Pinker — and teaches _why_ a passage fails:
+writing — Orwell, Strunk, the Economist, Gopen & Swan, Pinker — and teaches _why_ a passage fails:
 a named failure pattern, the reason it fails, and a before/after rewrite. The grade is secondary; the
 lesson is the product.
 

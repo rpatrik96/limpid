@@ -5,11 +5,11 @@
 [![CI](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml/badge.svg)](https://github.com/rpatrik96/limpid/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.91-007ACC.svg)](https://code.visualstudio.com/)
-[![tests](https://img.shields.io/badge/tests-395-brightgreen.svg)](#develop)
+[![tests](https://img.shields.io/badge/tests-400-brightgreen.svg)](#develop)
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
-writing against **good** writing — Orwell, Strunk & White, Hemingway, the
-Economist, Pinker's curse-of-knowledge — not the way academics usually write, and
+writing against **good** writing — Orwell, Strunk, the Economist, Gopen &
+Swan, Pinker's curse-of-knowledge — not the way academics usually write, and
 it **teaches _why_** a passage fails: it names the failure pattern, explains the
 cognitive reason, and shows a before/after. It runs locally; your drafts never
 leave your machine.
@@ -105,8 +105,8 @@ Toggle save-refresh with `limpid.reanalyzeOnSave`.
 
 ## What it does
 
-- **Highlights** the extracted prose, Hemingway-style — long sentences, passive
-  voice, hedges, fillers, weak openers.
+- **Highlights** the extracted prose inline — long sentences, passive voice,
+  hedges, fillers, weak openers.
 - **Coaches** with cards: a named pattern (Buried Lede, Idea Soup, Hedge
   Stacking…) → _why it fails_ → a before/after fix. Each
   card can **reveal** the passage in the editor; where there's a concrete rewrite,

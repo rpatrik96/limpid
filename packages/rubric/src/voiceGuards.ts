@@ -1,7 +1,7 @@
 import type { VoiceGuard } from "@coach/contract";
 
 /**
- * Voice guards protect the author's endorsed style from naive Strunk/Hemingway
+ * Voice guards protect the author's endorsed style from naive length-and-passive
  * penalties (see AGENTS.md "Voice guardrail"). Each guard names the ruleIds it
  * suppresses or down-weights when its condition holds. The coach consults these
  * before surfacing a finding from a guarded rule.

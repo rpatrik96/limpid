@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.15]
+
+The release that makes the repository public.
+
 ### Added
 
 - **Shareable distribution bundle + release assets.** `npm run package:share` (and the
@@ -15,6 +19,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`share/LIMPID_FOR_LLMS.md`) that can be dropped into a project as `AGENTS.md` /
   `llms.txt`. Tagging `v<version>` now attaches both the `.vsix` and the bundle to the
   GitHub Release.
+- **The CLI honours `.limpid/rules.json`.** The deterministic gate now discovers and
+  applies the workspace's house rules instead of the built-in rubric alone, so a
+  pre-commit hook and the extension judge a file by the same standard. `--rules <path>`
+  points at a specific file and `--no-user-rules` opts out.
+- **Per-finding JSON, `--max-severity`, and a notes register.** `--json` emits every
+  finding rather than a summary line, `--max-severity` fails the gate at a chosen
+  threshold, and `--register notes` adds a profile for vault-style prose.
+- **`license` on every workspace manifest.** The repository was already MIT; the
+  manifests now say so individually.
+
+### Changed
+
+- **The coaching cards drop the rule citation.** The card keeps `source` in its data,
+  but the rendered card shows the pattern, the reason and the before/after — the
+  citation was the line readers skipped.
+- **The canon is named as Orwell, Strunk, the Economist, Gopen & Swan and Pinker.**
+  Hemingway grounded no rule and never appeared in `NOTICE.md`, and the Strunk
+  quotations are from the public-domain 1918 first edition, not E. B. White's revision,
+  so the tagline now matches what the rubric actually implements and cites.
+
+### Fixed
+
+- **A mistyped detector made a house rule silently inert.** A rule whose detector kind
+  did not match any known kind was loaded and then never fired, so a workspace could
+  believe it was enforcing a rule that did nothing.
+- **A callout title is a heading, not the body's first clause.** Markdown sectioning
+  folded `> [!note] Title` into the following paragraph, which distorted section
+  boundaries and every per-section metric downstream.
+- **`NOTICE.md` no longer claims the Orwell rules are unquoted.** Two of the six rule
+  names are Orwell's own sentences, so he moves into the quoted-sources section with the
+  short-phrase and URAA analysis; the Strunk passage count and the Gopen & Swan word
+  count are corrected with him.
 
 ## [0.0.14]
 
@@ -221,7 +257,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The VS Code extension (`apps/extension`): a command and a webview coach panel.
 - Deterministic metrics and findings end to end, with a mock `LanguageModel` for the LLM path.
 
-[Unreleased]: https://github.com/rpatrik96/limpid/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/rpatrik96/limpid/compare/v0.0.15...HEAD
+[0.0.15]: https://github.com/rpatrik96/limpid/compare/v0.0.14...v0.0.15
 [0.0.6]: https://github.com/rpatrik96/limpid/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/rpatrik96/limpid/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/rpatrik96/limpid/compare/v0.0.3...v0.0.4

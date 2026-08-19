@@ -2,8 +2,9 @@
   "name": "limpid",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "type": "module",
-  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk & White, Hemingway, the Economist) and teaches why.",
+  "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk, the Economist, Gopen & Swan) and teaches why.",
   "engines": {
     "node": ">=20"
   },

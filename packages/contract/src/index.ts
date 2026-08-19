@@ -11,7 +11,7 @@
  *
  * Design rule: spans are offsets into the EXTRACTED prose (Extraction.text),
  * NOT the .tex source. The webview renders the extracted prose and highlights
- * those spans (Hemingway-style), so v1 needs no exact source-offset mapping.
+ * those spans inline, so v1 needs no exact source-offset mapping.
  * A coarse Extraction.sourceMap supports best-effort "reveal in editor".
  */
 
@@ -197,7 +197,7 @@ export interface SectionThresholds {
   passiveFractionMax: number;
 }
 
-/** Protects the author's signature voice from naive Strunk/Hemingway penalties. */
+/** Protects the author's signature voice from naive length-and-passive penalties. */
 export interface VoiceGuard {
   id: string;
   description: string;

@@ -37,6 +37,6 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Examples of good/bad prose, references (Orwell, Strunk & White, the Economist), or mockups.
+      description: Examples of good/bad prose, references (Orwell, Strunk, the Economist), or mockups.
     validations:
       required: false

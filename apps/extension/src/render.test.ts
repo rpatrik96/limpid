@@ -253,13 +253,15 @@ describe("interactive controls", () => {
 
   it("declutters the card: Why/Fix as a definition list, no citation line", () => {
     const report = reportWithFinding();
-    report.findings[0]!.source = "Strunk & White — omit needless words.";
+    report.findings[0]!.source = "Strunk, The Elements of Style (1918) — omit needless words.";
     const html = renderReport(report);
     // Why/Fix recede into a tight definition list rather than stacked paragraphs.
     expect(html).toContain('<dl class="card-wf">');
     expect(html).toContain("<dt>Why</dt>");
     // The finding keeps its source in the data — the card just never shows it.
-    expect(report.findings[0]!.source).toBe("Strunk & White — omit needless words.");
+    expect(report.findings[0]!.source).toBe(
+      "Strunk, The Elements of Style (1918) — omit needless words.",
+    );
     expect(html).not.toContain("card-src");
     expect(html).not.toContain("omit needless words");
   });

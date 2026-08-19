@@ -3,8 +3,8 @@
 > _Clear writing, and the reason it's clear._
 
 An educational writing coach for academic prose, in VS Code. Limpid scores your
-writing against **good** writing — Orwell, Strunk & White, Hemingway, the
-Economist, Pinker's curse-of-knowledge — and **teaches _why_** a passage fails:
+writing against **good** writing — Orwell, Strunk, the Economist, Gopen &
+Swan, Pinker's curse-of-knowledge — and **teaches _why_** a passage fails:
 it names the failure pattern, explains the cognitive reason, and shows a
 before/after. It runs locally; your drafts never leave your machine.
 

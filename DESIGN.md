@@ -4,7 +4,7 @@
 > the brand lives in the repo name + the extension manifest. Backup name considered: Plumbline.)
 
 A **local-first VS Code extension** that scores academic writing against _good_ writing — Orwell,
-Strunk & White, Hemingway, the Economist, Pinker — and **teaches _why_ a passage
+Strunk, the Economist, Gopen & Swan, Pinker — and **teaches _why_ a passage
 fails**, not just where. It is modeled on the coaching UX of Microsoft's _AI-Engineering-Coach_ (a
 VS Code dashboard: scored feedback, trends, editable rules, a learning surface), turned on prose.
 The benchmark is good writing, **not** typical-academic writing, which the tool treats as the failure
@@ -24,13 +24,14 @@ students and a public release (a web front-end reusing the same core comes later
   The scorer is **hybrid by necessity**: the script grounds and feeds the model; the model judges.
 - **A front-end-agnostic core.** The analysis core (`engine`, `latex`, `rubric`, `coach`) knows
   nothing about VS Code. The extension is one front-end; a web app reuses the same `CoachReport`.
-- **The panel renders its own prose.** A Hemingway-style webview highlights the _extracted_ text, so
+- **The panel renders its own prose.** The webview highlights the _extracted_ text inline, so
   v1 needs **no** exact source-offset mapping. Inline `.tex` squiggles (TeXtidote/YaLafi) are a v2
   upgrade behind the same `latex` interface.
 - **Audience altitude is inferred, but reconfigurable.** "Good" is reader-relative ("you talk to your
   colleagues and grandma differently"); the tool infers the target reader and lets the user override.
-- **Protect the author's voice.** A naive Strunk/Hemingway scorer punishes prose this user calls good
-  (em-dashes, clause-stacking that resolves cleanly, scope-hedging). `VoiceGuard`s temper those checks.
+- **Protect the author's voice.** A scorer that penalizes length and passives on sight punishes prose
+  its author endorses (em-dashes, clause-stacking that resolves cleanly, scope-hedging). `VoiceGuard`s
+  temper those checks.
 - **Local-first.** Unpublished papers never leave the machine; LLM calls go through the user's own
   Copilot subscription (VS Code LM API) or Claude, with a deterministic-only fallback.
 

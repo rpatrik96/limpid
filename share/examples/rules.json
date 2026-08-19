@@ -59,7 +59,7 @@
       "id": "house.empty-intensifiers",
       "name": "Cut empty intensifiers",
       "category": "precision",
-      "source": "house style (after Strunk & White)",
+      "source": "house style (after Strunk 1918)",
       "method": "heuristic",
       "severity": "suggestion",
       "rationale": "Empty intensifiers (very, really, quite, rather) pad a claim without adding information. A precise word or number makes them unnecessary.",

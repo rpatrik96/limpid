@@ -9,7 +9,7 @@
 ## What Limpid is
 
 A **local-first writing coach for academic prose**. It scores writing against _good_
-writing — Orwell, Strunk & White, Hemingway, the Economist, Gopen & Swan, Pinker —
+writing — Orwell, Strunk, the Economist, Gopen & Swan, Pinker —
 and **teaches why** a passage fails: it names the failure pattern (Buried Lede, Idea
 Soup, Hedge Stacking…), gives the cognitive reason, and shows a before/after. Built
 for LaTeX and Markdown (and plain prose).

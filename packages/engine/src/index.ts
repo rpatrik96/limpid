@@ -5,7 +5,7 @@
  * word lists, passive pattern, Flesch–Kincaid + vowel-group syllable counter,
  * abbreviation-protected sentence splitter, sentence-length stats / CV / monotony.
  * Unlike the Python script, every finding carries character spans into the input
- * text so the panel can highlight the extracted prose (Hemingway-style).
+ * text so the panel can highlight the extracted prose inline.
  *
  * Pure: no vscode, no fs, no network. Input is already-extracted prose.
  */
