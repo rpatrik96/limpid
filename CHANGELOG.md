@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.16]
+
+### Added
+
+- **A Marketplace icon.** The extension shipped without one, so a first publish would
+  have taken a grey placeholder for its listing. `media/icon.png` renders the droplet
+  mark at 256x256 on the gallery banner colour; the SVG the editor uses for the activity
+  bar is unchanged, because the Marketplace does not accept SVG.
+
 ### Fixed
 
 - **`node scripts/render-webview.mjs` works from the repo root**, as its own docstring
@@ -265,7 +274,8 @@ The release that makes the repository public.
 - The VS Code extension (`apps/extension`): a command and a webview coach panel.
 - Deterministic metrics and findings end to end, with a mock `LanguageModel` for the LLM path.
 
-[Unreleased]: https://github.com/rpatrik96/limpid/compare/v0.0.15...HEAD
+[Unreleased]: https://github.com/rpatrik96/limpid/compare/v0.0.16...HEAD
+[0.0.16]: https://github.com/rpatrik96/limpid/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/rpatrik96/limpid/compare/v0.0.14...v0.0.15
 [0.0.6]: https://github.com/rpatrik96/limpid/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/rpatrik96/limpid/compare/v0.0.4...v0.0.5

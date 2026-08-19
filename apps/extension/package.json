@@ -1,12 +1,17 @@
 {
   "name": "limpid",
   "displayName": "Limpid",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "private": true,
   "type": "module",
   "description": "Limpid — an educational writing coach for academic prose. Scores against good writing (Orwell, Strunk, the Economist, Gopen & Swan) and teaches why. Not a grammar/spell checker.",
   "publisher": "rpatrik96",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#12507e",
+    "theme": "dark"
+  },
   "homepage": "https://github.com/rpatrik96/limpid#readme",
   "bugs": {
     "url": "https://github.com/rpatrik96/limpid/issues"
