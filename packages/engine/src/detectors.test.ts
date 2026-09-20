@@ -165,6 +165,25 @@ describe("findUndefinedAcronyms", () => {
     expect(undefinedAcronyms).not.toContain("IID");
   });
 
+  it("does NOT flag the universal initialisms the rule's rationale exempts", () => {
+    const text = "The API call runs on one GPU, returns JSON, and renders a PDF.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toEqual([]);
+  });
+
+  it("does NOT flag a filename that looks like an acronym", () => {
+    const text = "Write the CLAUDE.md as you would brief a new student; see README.md too.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toEqual([]);
+  });
+
+  it("still flags the same token when it is not a filename", () => {
+    const text = "The CLAUDE convention and the NASDAQ listing are unrelated.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toContain("CLAUDE");
+    expect(undefinedAcronyms).toContain("NASDAQ");
+  });
+
   it("still flags a genuine undefined initialism used inline", () => {
     const text = "We optimize with SGD and report the RMSE on the held-out split.";
     const { undefinedAcronyms } = findUndefinedAcronyms(text);

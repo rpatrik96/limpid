@@ -162,13 +162,21 @@ function isAloneOnHeadingLine(text: string, at: number, token: string): boolean 
   return text.slice(lineStart, lineEnd).trim() === token;
 }
 
+/** A file extension right after `at` makes the token a filename, not an acronym. */
+const FILENAME_EXT_RE = /^\.[A-Za-z][A-Za-z0-9]{0,4}\b/;
+
+function isFilename(text: string, at: number, token: string): boolean {
+  return FILENAME_EXT_RE.test(text.slice(at + token.length));
+}
+
 /**
  * Scan for /\b[A-Z]{2,}\b/ acronyms. A "Word Word (AB)" pattern is a definition:
  * the acronym is considered defined at and after that position. Flag any
  * acronym USED before its first definition — but only genuine initialism
  * candidates: common all-caps English words ("NOT", "AND"), section-heading
- * tokens ("METHODS"), roman numerals ("III", "XII"), and a token alone on a
- * heading line are skipped, since none is a jargon cliff.
+ * tokens ("METHODS"), roman numerals ("III", "XII"), a token alone on a heading
+ * line, and a token carrying a file extension ("CLAUDE.md", "README.md") are
+ * skipped, since none is a jargon cliff.
  *
  * Returns { undefinedUses, undefinedAcronyms } where undefinedAcronyms is the
  * unique, first-seen-ordered list of acronyms used before definition.
@@ -202,6 +210,8 @@ export function findUndefinedAcronyms(text: string): {
     if (!isAcronymCandidate(acro)) continue;
     // A token alone on its line is a heading, not a use-before-definition.
     if (isAloneOnHeadingLine(text, at, acro)) continue;
+    // "CLAUDE.md", "README.md": a filename the reader can open, not an initialism.
+    if (isFilename(text, at, acro)) continue;
     const defAt = definedAt.get(acro);
     // The token that sits inside the definition parens (the defining occurrence)
     // is at defAt + 1; never flag the definition itself or anything at/after it.
