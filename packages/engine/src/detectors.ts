@@ -162,6 +162,19 @@ function isAloneOnHeadingLine(text: string, at: number, token: string): boolean 
   return text.slice(lineStart, lineEnd).trim() === token;
 }
 
+/**
+ * A gloss is a noun phrase ("BLEU, a translation score …"); a clause is not
+ * ("MLE, the answer is no …"). A finite verb in the first two words is what
+ * tells them apart, so neither slot may hold one.
+ */
+const FINITE_VERB =
+  "is|are|was|were|has|have|had|will|would|can|could|should|shall|may|might|must|does|do|did|means|meant|seems|remains|becomes|comes|goes|gives|takes|makes";
+const NOT_A_VERB = `(?!(?:${FINITE_VERB})\\b)`;
+const APPOSITIVE_GLOSS_RE = new RegExp(
+  `\\b([A-Z]{2,}),\\s+(?:an?|the)\\s+${NOT_A_VERB}[a-z][a-z-]*\\s+${NOT_A_VERB}[a-z][a-z-]*`,
+  "g",
+);
+
 /** A file extension right after `at` makes the token a filename, not an acronym. */
 const FILENAME_EXT_RE = /^\.[A-Za-z][A-Za-z0-9]{0,4}\b/;
 
@@ -170,8 +183,9 @@ function isFilename(text: string, at: number, token: string): boolean {
 }
 
 /**
- * Scan for /\b[A-Z]{2,}\b/ acronyms. A "Word Word (AB)" pattern is a definition:
- * the acronym is considered defined at and after that position. Flag any
+ * Scan for /\b[A-Z]{2,}\b/ acronyms. A "Word Word (AB)" pattern is a definition,
+ * and so is an appositive gloss ("AB, a short explanation of it"): the acronym is
+ * considered defined at and after that position. Flag any
  * acronym USED before its first definition — but only genuine initialism
  * candidates: common all-caps English words ("NOT", "AND"), section-heading
  * tokens ("METHODS"), roman numerals ("III", "XII"), a token alone on a heading
@@ -189,12 +203,27 @@ export function findUndefinedAcronyms(text: string): {
   //    whose initials cover the acronym (loosened to "≥2 capitalized-ish words").
   //    We record the offset of each defined acronym's FIRST definition.
   const definedAt = new Map<string, number>();
+  const noteDefinition = (acro: string, at: number): void => {
+    const prior = definedAt.get(acro);
+    if (prior === undefined || at < prior) definedAt.set(acro, at);
+  };
+
   const defRe = /\b((?:[A-Za-z][A-Za-z-]*\s+){1,}?)\(([A-Z]{2,})\)/g;
   let dm: RegExpExecArray | null;
   while ((dm = defRe.exec(text)) !== null) {
     const acro = dm[2]!;
-    const at = dm.index + dm[0].indexOf("(" + acro);
-    if (!definedAt.has(acro)) definedAt.set(acro, at);
+    noteDefinition(acro, dm.index + dm[0].indexOf("(" + acro));
+  }
+
+  // 1b. An appositive gloss defines the acronym just as a parenthesis does:
+  //     "BLEU, a translation score based on n-gram overlap". The writer has
+  //     told the reader what it is, in the place the reader needs it, and
+  //     flagging it teaches nothing. The acronym IS the definition here, so it
+  //     defines from its own offset.
+  const appositiveRe = new RegExp(APPOSITIVE_GLOSS_RE.source, "g");
+  let am: RegExpExecArray | null;
+  while ((am = appositiveRe.exec(text)) !== null) {
+    noteDefinition(am[1]!, am.index);
   }
 
   // 2. Walk every acronym occurrence; flag uses before the definition offset.
