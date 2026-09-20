@@ -184,6 +184,25 @@ describe("findUndefinedAcronyms", () => {
     expect(undefinedAcronyms).toContain("NASDAQ");
   });
 
+  it("treats an appositive gloss as a definition", () => {
+    const text = "You optimize BLEU, a translation score based on n-gram overlap, for the system.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).not.toContain("BLEU");
+  });
+
+  it("still flags an acronym used before its appositive gloss", () => {
+    const text =
+      "The BLEU score rose 4 points. We report BLEU, a translation score based on overlap.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toContain("BLEU");
+  });
+
+  it("does not read a bare clause after a comma as a gloss", () => {
+    const text = "We asked whether the MLE, the answer is no, could be recovered here.";
+    const { undefinedAcronyms } = findUndefinedAcronyms(text);
+    expect(undefinedAcronyms).toContain("MLE");
+  });
+
   it("still flags a genuine undefined initialism used inline", () => {
     const text = "We optimize with SGD and report the RMSE on the held-out split.";
     const { undefinedAcronyms } = findUndefinedAcronyms(text);
